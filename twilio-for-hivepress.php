@@ -9,6 +9,7 @@
  * Domain Path: /languages/
  * Requires at least: 5.0
  * Requires PHP: 7.4
+ * Requires Plugins: hivepress
  * License: GPLv2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  *
@@ -25,5 +26,13 @@ add_filter(
 		$extensions[] = __DIR__;
 
 		return $extensions;
+	}
+);
+
+// Load translations.
+add_action(
+	'init',
+	function() {
+		load_plugin_textdomain( 'twilio-for-hivepress', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 	}
 );
