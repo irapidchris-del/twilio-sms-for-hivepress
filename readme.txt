@@ -4,7 +4,7 @@ Tags: hivepress, twilio, sms, notifications
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,6 +24,7 @@ Features:
 * Sends via a Twilio phone number or a Twilio Messaging Service.
 * Numbers are normalised to the E.164 format, with an optional default country code for numbers saved in the national format.
 * Optional error logging for troubleshooting deliveries.
+* Automatic updates from GitHub: once installed, new releases appear on your Plugins screen for one-click updating, just like a WordPress.org plugin.
 
 Please note that sending SMS messages usually requires the recipient's consent under regulations such as UK PECR and GDPR. Only collect phone numbers with a clear explanation of how they will be used.
 
@@ -57,7 +58,14 @@ Yes. If you clear the email content via HivePress > Emails, the email is not sen
 
 Ideally the international E.164 format (e.g. +447700900123). If you set the default country code option, numbers saved in the national format (e.g. 07700 900123) are converted automatically.
 
+= How does the plugin update itself? =
+
+The plugin checks its GitHub repository for new releases and shows available updates on your Plugins screen, so you can update with one click just like a WordPress.org plugin. Updates are downloaded from the official release file, so your plugin folder never changes. The first version you install must be added manually; every version after that can be updated in place.
+
 == Changelog ==
+
+= 1.1.0 =
+* Added automatic updates from GitHub releases (one-click updates via the Plugins screen).
 
 = 1.0.0 =
 * Initial release.
