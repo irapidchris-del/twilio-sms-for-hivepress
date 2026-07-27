@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-26T15:30:09+00:00\n"
+"POT-Creation-Date: 2026-07-27T21:40:14+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Domain: twilio-for-hivepress\n"
 
@@ -164,4 +164,29 @@ msgstr ""
 
 #: includes/configs/settings.php:101
 msgid "Enter a messaging service SID to send messages via a messaging service instead of the phone number above."
+msgstr ""
+
+#: twilio-for-hivepress.php:242
+msgid "See the GitHub releases page for the changelog."
+msgstr ""
+
+#: twilio-for-hivepress.php:257
+msgid "Check for updates"
+msgstr ""
+
+#. translators: %s: new version number.
+#: twilio-for-hivepress.php:319
+msgid "A new version of Twilio for HivePress (%s) is available."
+msgstr ""
+
+#: twilio-for-hivepress.php:322
+msgid "Twilio for HivePress is up to date."
+msgstr ""
+
+#: twilio-for-hivepress.php:325
+msgid "Could not reach GitHub to check for updates. Please try again later."
+msgstr ""
+
+#: twilio-for-hivepress.php:370
+msgid "Could not rename the update directory."
 msgstr ""

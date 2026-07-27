@@ -1,7 +1,7 @@
 === Twilio for HivePress ===
 Contributors: chrisb
 Tags: hivepress, twilio, sms, notifications
-Requires at least: 5.0
+Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
 Stable tag: 1.1.0
