@@ -30,7 +30,7 @@ return [
 
 					'twilio_country_code'    => [
 						'label'       => esc_html__( 'Country Code', 'twilio-for-hivepress' ),
-						'description' => esc_html__( 'Enter the default country calling code (e.g. +44). It is added to phone numbers saved in the national format.', 'twilio-for-hivepress' ),
+						'description' => esc_html__( 'Enter the default country calling code (e.g. +44). It is added to phone numbers saved in the national format. Numbers from countries that keep a leading zero (such as Italy) should be saved in the full international format instead.', 'twilio-for-hivepress' ),
 						'type'        => 'text',
 						'max_length'  => 8,
 						'_order'      => 20,
@@ -45,10 +45,11 @@ return [
 					],
 
 					'twilio_enable_logging'  => [
-						'label'   => esc_html__( 'Logging', 'twilio-for-hivepress' ),
-						'caption' => esc_html__( 'Log SMS delivery errors', 'twilio-for-hivepress' ),
-						'type'    => 'checkbox',
-						'_order'  => 40,
+						'label'       => esc_html__( 'Logging', 'twilio-for-hivepress' ),
+						'caption'     => esc_html__( 'Log SMS delivery errors', 'twilio-for-hivepress' ),
+						'description' => esc_html__( 'Log entries may include partially masked recipient details, so make sure the PHP error log is not publicly accessible.', 'twilio-for-hivepress' ),
+						'type'        => 'checkbox',
+						'_order'      => 40,
 					],
 				],
 			],

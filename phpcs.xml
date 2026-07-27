@@ -3,6 +3,7 @@
 	<description>Twilio for HivePress coding standards, mirroring the HivePress ruleset.</description>
 
 	<exclude-pattern>vendor/*</exclude-pattern>
+	<exclude-pattern>dist/*</exclude-pattern>
 
 	<rule ref="WordPress">
 		<exclude name="WordPress.PHP.StrictInArray.MissingTrueStrict"/>

@@ -98,8 +98,10 @@ final class Twilio extends Component {
 
 			if ( $key ) {
 				$label = hivepress()->translator->get_string( $key );
-			} else {
-				$label = ucwords( str_replace( '_', ' ', $email::get_meta( 'name' ) ) );
+			}
+
+			if ( ! $label ) {
+				$label = ucwords( str_replace( '_', ' ', (string) $email::get_meta( 'name' ) ) );
 			}
 		}
 
@@ -133,7 +135,11 @@ final class Twilio extends Component {
 				}
 			}
 
-			$description .= ' ' . sprintf( hivepress()->translator->get_string( 'these_tokens_are_available' ), implode( ', ', $names ) );
+			$format = hivepress()->translator->get_string( 'these_tokens_are_available' );
+
+			if ( $format ) {
+				$description .= ' ' . sprintf( $format, implode( ', ', $names ) );
+			}
 		}
 
 		return trim( $description );
@@ -255,7 +261,13 @@ final class Twilio extends Component {
 		}
 
 		// Get template.
-		$template = get_option( hp\prefix( 'twilio_sms_' . $name ), hp\get_array_value( $this->get_sms_defaults(), $name ) );
+		$template = get_option( hp\prefix( 'twilio_sms_' . $name ), null );
+
+		if ( null === $template || false === $template ) {
+
+			// Fall back to the default text only if the option was never saved.
+			$template = hp\get_array_value( $this->get_sms_defaults(), $name );
+		}
 
 		if ( ! $template || ! is_string( $template ) ) {
 			return;
@@ -332,8 +344,9 @@ final class Twilio extends Component {
 		// Replace tokens.
 		$text = hp\replace_tokens( $email->get_tokens(), $template );
 
-		// Remove HTML.
-		$text = wp_strip_all_tags( $text );
+		// Remove HTML without consuming stray "<" characters in text.
+		$text = preg_replace( '/<(script|style)[^>]*>.*?<\/\1>/is', '', $text );
+		$text = preg_replace( '/<[a-zA-Z\/!][^>]*>/', '', $text );
 		$text = html_entity_decode( $text, ENT_QUOTES, get_bloginfo( 'charset' ) );
 
 		/**
@@ -364,7 +377,7 @@ final class Twilio extends Component {
 		if ( is_email( $address ) ) {
 
 			// Get administrator phone.
-			if ( get_option( 'admin_email' ) === $address ) {
+			if ( 0 === strcasecmp( (string) get_option( 'admin_email' ), $address ) ) {
 				$phone = get_option( hp\prefix( 'twilio_admin_phone' ) );
 			}
 
@@ -383,8 +396,8 @@ final class Twilio extends Component {
 
 		if ( $phone && ! $normalized ) {
 
-			/* translators: %s: email address. */
-			$this->log( sprintf( __( 'Invalid phone number for %s.', 'twilio-for-hivepress' ), $address ) );
+			/* translators: %s: masked email address. */
+			$this->log( sprintf( __( 'Invalid phone number for %s.', 'twilio-for-hivepress' ), $this->mask_address( $address ) ) );
 		}
 
 		/**
@@ -448,7 +461,8 @@ final class Twilio extends Component {
 	protected function normalize_phone( $phone ) {
 
 		// Remove formatting.
-		$phone = preg_replace( '/[^\d+]/', '', (string) $phone );
+		$phone = preg_replace( '/\(\s*0\s*\)/', '', (string) $phone );
+		$phone = preg_replace( '/[^\d+]/', '', $phone );
 		$phone = preg_replace( '/(?!^)\+/', '', $phone );
 
 		// Replace prefix.
@@ -458,10 +472,14 @@ final class Twilio extends Component {
 
 		// Add country code.
 		if ( $phone && 0 !== strpos( $phone, '+' ) ) {
-			$code = preg_replace( '/\D/', '', (string) get_option( hp\prefix( 'twilio_country_code' ) ) );
+			$code = ltrim( preg_replace( '/\D/', '', (string) get_option( hp\prefix( 'twilio_country_code' ) ) ), '0' );
 
 			if ( $code ) {
-				$phone = '+' . $code . ltrim( $phone, '0' );
+				if ( 0 === strpos( $phone, $code ) && strlen( $phone ) > strlen( $code ) + 6 ) {
+					$phone = '+' . $phone;
+				} else {
+					$phone = '+' . $code . preg_replace( '/^0/', '', $phone );
+				}
 			}
 		}
 
@@ -548,12 +566,29 @@ final class Twilio extends Component {
 				$message .= ' (' . $code . ')';
 			}
 
-			$this->log( $message );
+			// Mask phone numbers echoed back in API error messages.
+			$this->log( preg_replace( '/\+\d{5,13}(\d{2})/', '+***$1', $message ) );
 
 			return false;
 		}
 
 		return true;
+	}
+
+	/**
+	 * Masks an email address for logging.
+	 *
+	 * @param string $address Email address.
+	 * @return string
+	 */
+	protected function mask_address( $address ) {
+		if ( false === strpos( $address, '@' ) ) {
+			return $address;
+		}
+
+		list( $name, $domain ) = explode( '@', $address, 2 );
+
+		return substr( $name, 0, 1 ) . '***@' . $domain;
 	}
 
 	/**
