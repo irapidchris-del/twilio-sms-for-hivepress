@@ -3,7 +3,7 @@
  * Plugin Name: Twilio for HivePress
  * Plugin URI: https://github.com/irapidchris-del/twilio-sms-for-hivepress
  * Description: Send SMS notifications for HivePress events via Twilio.
- * Version: 1.4.0
+ * Version: 1.4.1
  * Author: ChrisB @ HivePress Community
  * Author URI: https://community.hivepress.io/u/chrisb/summary
  * Text Domain: twilio-for-hivepress
@@ -23,7 +23,7 @@ namespace TwilioForHivePress;
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
-const VERSION = '1.4.0';
+const VERSION = '1.4.1';
 
 /**
  * Registers the extension with HivePress.
@@ -164,6 +164,78 @@ function add_row_meta( $meta, $plugin_file ) {
 }
 
 add_filter( 'plugin_row_meta', __NAMESPACE__ . '\\add_row_meta', 10, 2 );
+
+/**
+ * Adds show/hide toggles to the masked credential fields.
+ *
+ * The auth token and API key secret render as password-type inputs, so a
+ * toggle is needed to read back what is stored. HivePress ships its own eye
+ * button, but its handler lives in the front-end script bundle, which is
+ * never loaded in wp-admin - so a dead button would render. This one is
+ * self-contained: Dashicons are always available in the admin, and the
+ * button flips the input type in place.
+ *
+ * @return void
+ */
+function print_secret_toggles() {
+
+	// phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only screen check that changes nothing; the capability test below is the gate.
+	$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
+	$tab  = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : '';
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+	if ( 'hp_settings' !== $page || 'integrations' !== $tab || ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+	?>
+	<script>
+	( function() {
+		var labels = {
+			show: <?php echo wp_json_encode( __( 'Show', 'twilio-for-hivepress' ) ); ?>,
+			hide: <?php echo wp_json_encode( __( 'Hide', 'twilio-for-hivepress' ) ); ?>
+		};
+
+		[ 'hp_twilio_auth_token', 'hp_twilio_api_key_secret' ].forEach( function( name ) {
+			var input = document.querySelector( 'input[name="' + name + '"]' );
+
+			if ( ! input ) {
+				return;
+			}
+
+			var button = document.createElement( 'button' );
+
+			// Explicitly not a submit button: it sits inside the settings form.
+			button.type = 'button';
+			button.className = 'button';
+			button.style.marginLeft = '0.5rem';
+			button.style.verticalAlign = 'middle';
+			button.setAttribute( 'aria-label', labels.show );
+			button.title = labels.show;
+
+			var icon = document.createElement( 'span' );
+
+			icon.className = 'dashicons dashicons-visibility';
+			icon.style.verticalAlign = 'text-bottom';
+
+			button.appendChild( icon );
+
+			button.addEventListener( 'click', function() {
+				var hidden = 'password' === input.type;
+
+				input.type = hidden ? 'text' : 'password';
+				icon.className = 'dashicons ' + ( hidden ? 'dashicons-hidden' : 'dashicons-visibility' );
+				button.title = hidden ? labels.hide : labels.show;
+				button.setAttribute( 'aria-label', hidden ? labels.hide : labels.show );
+			} );
+
+			input.insertAdjacentElement( 'afterend', button );
+		} );
+	} )();
+	</script>
+	<?php
+}
+
+add_action( 'admin_footer', __NAMESPACE__ . '\\print_secret_toggles' );
 
 /*
  * -------------------------------------------------------------------------
