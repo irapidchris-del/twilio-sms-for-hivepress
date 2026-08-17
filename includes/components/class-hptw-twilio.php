@@ -305,7 +305,7 @@ final class Hptw_Twilio extends Component {
 			// Meta token lists name whole models, so mark those tokens as such.
 			$tokens = array_map(
 				function ( $token ) {
-					return class_exists( '\\HivePress\\Models\\' . $token ) ? $token . '.field' : $token;
+					return class_exists( '\HivePress\Models\\' . $token ) ? $token . '.field' : $token;
 				},
 				$tokens
 			);
@@ -589,7 +589,7 @@ final class Hptw_Twilio extends Component {
 	protected function get_sms_text( $template, $email ) {
 
 		// Drop the password token, with any fallback value, before it can resolve.
-		$template = $this->replace( '/%' . self::PASSWORD_TOKEN . '(\\s*\\|[^%]*)?%/u', '', (string) $template );
+		$template = $this->replace( '/%' . self::PASSWORD_TOKEN . '(\s*\|[^%]*)?%/u', '', (string) $template );
 
 		// Replace tokens.
 		$text = hp\replace_tokens( $email->get_tokens(), $template );
@@ -597,8 +597,8 @@ final class Hptw_Twilio extends Component {
 		// Remove HTML without consuming stray "<" characters in text. The /u
 		// flag keeps the byte-level engine from matching inside a multibyte
 		// character; templates and titles routinely carry emoji.
-		$text = $this->replace( '/<(script|style)[^>]*>.*?<\\/\\1>/isu', '', (string) $text );
-		$text = $this->replace( '/<[a-zA-Z\\/!][^>]*>/u', '', $text );
+		$text = $this->replace( '/<(script|style)[^>]*>.*?<\/\1>/isu', '', (string) $text );
+		$text = $this->replace( '/<[a-zA-Z\/!][^>]*>/u', '', $text );
 		$text = html_entity_decode( $text, ENT_QUOTES, get_bloginfo( 'charset' ) );
 
 		/**
@@ -696,7 +696,7 @@ final class Hptw_Twilio extends Component {
 	public function add_registration_field( $args, $form ) {
 
 		// The filter also fires for any subclassed form; target this one only.
-		if ( 'HivePress\\Forms\\User_Register' !== get_class( $form ) ) {
+		if ( 'HivePress\Forms\User_Register' !== get_class( $form ) ) {
 			return $args;
 		}
 
@@ -803,9 +803,9 @@ final class Hptw_Twilio extends Component {
 	protected function normalize_phone( $phone ) {
 
 		// Remove formatting.
-		$phone = preg_replace( '/\\(\\s*0\\s*\\)/', '', (string) $phone );
-		$phone = preg_replace( '/[^\\d+]/', '', $phone );
-		$phone = preg_replace( '/(?!^)\\+/', '', $phone );
+		$phone = preg_replace( '/\(\s*0\s*\)/', '', (string) $phone );
+		$phone = preg_replace( '/[^\d+]/', '', $phone );
+		$phone = preg_replace( '/(?!^)\+/', '', $phone );
 
 		// Replace prefix.
 		if ( 0 === strpos( $phone, '00' ) ) {
@@ -814,7 +814,7 @@ final class Hptw_Twilio extends Component {
 
 		// Add country code.
 		if ( $phone && 0 !== strpos( $phone, '+' ) ) {
-			$code = ltrim( preg_replace( '/\\D/', '', (string) get_option( hp\prefix( 'twilio_country_code' ) ) ), '0' );
+			$code = ltrim( preg_replace( '/\D/', '', (string) get_option( hp\prefix( 'twilio_country_code' ) ) ), '0' );
 
 			if ( $code ) {
 				if ( 0 === strpos( $phone, $code ) && strlen( $phone ) > strlen( $code ) + 6 ) {
@@ -826,7 +826,7 @@ final class Hptw_Twilio extends Component {
 		}
 
 		// Validate format.
-		if ( ! preg_match( '/^\\+[1-9]\\d{6,14}$/', $phone ) ) {
+		if ( ! preg_match( '/^\+[1-9]\d{6,14}$/', $phone ) ) {
 			return '';
 		}
 
@@ -881,11 +881,11 @@ final class Hptw_Twilio extends Component {
 		$from = trim( (string) $from );
 
 		// Anything with a letter is an alphanumeric sender ID.
-		if ( ! preg_match( '/^[0-9\\s\\-().+]+$/', $from ) ) {
+		if ( ! preg_match( '/^[0-9\s\-().+]+$/', $from ) ) {
 			return $from;
 		}
 
-		$digits = preg_replace( '/\\D/', '', $from );
+		$digits = preg_replace( '/\D/', '', $from );
 
 		if ( null === $digits ) {
 			return $from;
@@ -993,7 +993,7 @@ final class Hptw_Twilio extends Component {
 			}
 
 			// Mask phone numbers echoed back in API error messages.
-			$this->record_failure( $this->replace( '/\\+\\d{5,13}(\\d{2})/u', '+***$1', $message ) );
+			$this->record_failure( $this->replace( '/\+\d{5,13}(\d{2})/u', '+***$1', $message ) );
 
 			return false;
 		}
