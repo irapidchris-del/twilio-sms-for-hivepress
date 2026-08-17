@@ -301,35 +301,36 @@ msgstr ""
 msgid "Donate"
 msgstr ""
 
-#: twilio-for-hivepress.php:397
+#: twilio-for-hivepress.php:393
 msgid "See the GitHub releases page for the changelog."
 msgstr ""
 
-#: twilio-for-hivepress.php:429
+#: twilio-for-hivepress.php:416
 msgid "Settings"
 msgstr ""
 
-#: twilio-for-hivepress.php:446
+#: twilio-for-hivepress.php:432
 msgid "Check for updates"
 msgstr ""
 
 #. translators: %s: new version number.
-#: twilio-for-hivepress.php:495
+#: twilio-for-hivepress.php:498
+#, php-format
 msgid "A new version of Twilio for HivePress (%s) is available."
 msgstr ""
 
-#: twilio-for-hivepress.php:498
+#: twilio-for-hivepress.php:501
 msgid "Twilio for HivePress is up to date."
 msgstr ""
 
-#: twilio-for-hivepress.php:501
+#: twilio-for-hivepress.php:504
 msgid "No releases have been published on GitHub yet, so there is nothing to update to."
 msgstr ""
 
-#: twilio-for-hivepress.php:504
+#: twilio-for-hivepress.php:507
 msgid "Could not reach GitHub to check for updates. Please try again later."
 msgstr ""
 
-#: twilio-for-hivepress.php:547
+#: twilio-for-hivepress.php:552
 msgid "Could not rename the update directory."
 msgstr ""
