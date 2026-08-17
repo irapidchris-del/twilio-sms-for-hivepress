@@ -4,7 +4,7 @@ Tags: hivepress, twilio, sms, notifications
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.4.0
+Stable tag: 1.4.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -54,7 +54,7 @@ New Twilio trial accounts are heavily restricted: they can only text phone numbe
 
 = Why do new users not receive the registration SMS? =
 
-The standard HivePress registration form does not ask for a phone number, so at the moment the registration SMS is sent, no number is known yet. Enable "Ask for the phone number during registration" via HivePress > Settings > SMS to add an optional phone field to the registration form; users who fill it in receive the registration SMS and any later notifications straight away.
+The standard HivePress registration form does not ask for a phone number, so at the moment the registration SMS is sent, no number is known yet. Enable "Ask for the phone number during registration" via HivePress > Settings > SMS to add an optional phone field to the registration form; users who fill it in receive the registration SMS and any later notifications straight away. Alternatively, HivePress itself shows a phone attribute at registration when the attribute is marked as required; in that case it is a mandatory field, and this plugin leaves it in place rather than adding a second one.
 
 = Why is a notification not sent as an SMS? =
 
@@ -85,6 +85,9 @@ Ideally the international E.164 format (e.g. +447700900123). If you set the defa
 The plugin checks its GitHub repository for new releases and shows available updates on your Plugins screen, so you can update with one click just like a WordPress.org plugin. Updates are downloaded from the official release file, so your plugin folder never changes. The first version you install must be added manually; every version after that can be updated in place.
 
 == Changelog ==
+
+= 1.4.1 =
+* Added a show/hide toggle to the auth token and API key secret fields.
 
 = 1.4.0 =
 * Added an option to ask for the phone number during registration, so the registration SMS can reach new users on a standard install.
