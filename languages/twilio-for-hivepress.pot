@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Twilio for HivePress 1.4.1\n"
+"Project-Id-Version: Twilio for HivePress 1.5.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/twilio-for-hivepress\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-17T21:05:59+00:00\n"
+"POT-Creation-Date: 2026-08-17T22:18:20+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: twilio-for-hivepress\n"
@@ -39,120 +39,132 @@ msgstr ""
 msgid "https://community.hivepress.io/u/chrisb/summary"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:167
+#: includes/components/class-hptw-twilio.php:175
 #, php-format
 msgid "Hi, %user_name%! Thanks for registering, your account is now active."
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:168
+#: includes/components/class-hptw-twilio.php:176
 #, php-format
 msgid "Hi, %user_name%! Please verify your email address using this link: %email_verify_url%"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:169
+#: includes/components/class-hptw-twilio.php:177
 #, php-format
 msgid "Hi, %user_name%! Use this link to set a new password: %password_reset_url%"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:170
+#: includes/components/class-hptw-twilio.php:178
 msgid "A new listing \"%listing_title%\" has been submitted: %listing_url%"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:171
+#: includes/components/class-hptw-twilio.php:179
 #, php-format
 msgid "Hi, %user_name%! Your listing \"%listing_title%\" has been approved: %listing_url%"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:172
+#: includes/components/class-hptw-twilio.php:180
 #, php-format
 msgid "Hi, %user_name%! Unfortunately, your listing \"%listing_title%\" has been rejected."
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:173
+#: includes/components/class-hptw-twilio.php:181
 #, php-format
 msgid "Hi, %user_name%! Your listing \"%listing_title%\" has expired, renew it here: %listing_url%"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:174
+#: includes/components/class-hptw-twilio.php:182
 msgid "Listing \"%listing_title%\" has been updated: %listing_url%"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:175
+#: includes/components/class-hptw-twilio.php:183
 msgid "Listing \"%listing_title%\" has been reported: %listing_url%"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:176
+#: includes/components/class-hptw-twilio.php:184
 msgid "A new vendor has registered: %vendor_url%"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:214
+#: includes/components/class-hptw-twilio.php:222
 msgid "Claim Submitted"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:215
+#: includes/components/class-hptw-twilio.php:223
 msgid "Order Disputed"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:216
+#: includes/components/class-hptw-twilio.php:224
 msgid "Refund Failed"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:217
+#: includes/components/class-hptw-twilio.php:225
 msgid "Refund Requested"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:218
+#: includes/components/class-hptw-twilio.php:226
 msgid "Payout Failed"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:219
+#: includes/components/class-hptw-twilio.php:227
 msgid "Payout Requested"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:220
+#: includes/components/class-hptw-twilio.php:228
 msgid "Offer Submitted"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:221
+#: includes/components/class-hptw-twilio.php:229
 msgid "Request Submitted"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:284
+#: includes/components/class-hptw-twilio.php:292
 msgid "Site administrator"
 msgstr ""
 
 #. translators: %s: recipient of the message.
-#: includes/components/class-hptw-twilio.php:289
+#: includes/components/class-hptw-twilio.php:297
 #, php-format
 msgid "Sent to: %s."
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:403
+#: includes/components/class-hptw-twilio.php:411
 msgid "SMS sending is currently disabled because the Twilio credentials are missing."
 msgstr ""
 
 #. translators: %s: settings tab URL.
-#: includes/components/class-hptw-twilio.php:405
+#: includes/components/class-hptw-twilio.php:413
 #, php-format
 msgid "Enter them on the %s tab to enable it."
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:406
+#: includes/components/class-hptw-twilio.php:414
 msgid "Integrations"
 msgstr ""
 
+#. translators: %s: date and time.
+#: includes/components/class-hptw-twilio.php:436
+#, php-format
+msgid "The last SMS attempt failed (%s)."
+msgstr ""
+
+#. translators: %s: error message from Twilio.
+#: includes/components/class-hptw-twilio.php:440
+#, php-format
+msgid "Twilio said: %s. This notice clears when a message is delivered."
+msgstr ""
+
 #. translators: %s: masked email address.
-#: includes/components/class-hptw-twilio.php:616
+#: includes/components/class-hptw-twilio.php:652
 #, php-format
 msgid "Invalid phone number for %s."
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:678
+#: includes/components/class-hptw-twilio.php:714
 #: includes/configs/settings.php:154
 msgid "Phone Number"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:950
+#: includes/components/class-hptw-twilio.php:990
 msgid "Unknown error."
 msgstr ""
 
@@ -185,7 +197,7 @@ msgid "Ask for the phone number during registration"
 msgstr ""
 
 #: includes/configs/settings.php:35
-msgid "Add an optional phone number field to the registration form. Without it, the registration SMS cannot be delivered, because users only add their number in the account settings after signing up."
+msgid "Add an optional phone number field to the registration form. Without it, the registration SMS cannot be delivered, because users only add their number in the account settings after signing up. Set the Country Code option too, so numbers typed in the national format still deliver."
 msgstr ""
 
 #: includes/configs/settings.php:41
@@ -246,7 +258,7 @@ msgid "Tick this before deleting the plugin to remove its stored data: the Twili
 msgstr ""
 
 #: includes/configs/settings.php:99
-msgid "Enter your Twilio API credentials to enable SMS delivery. You can find them in the Twilio console. Twilio trial accounts can only send messages to verified phone numbers. When a messaging service SID is set it takes precedence over the phone number; clear it while using the test credentials, which cannot access messaging services."
+msgid "Enter your Twilio API credentials to enable SMS delivery. Create an API key on the API keys and tokens page of the Twilio console and enter it with your account SID. Live sending needs an upgraded (paid) Twilio account with an approved Trust Hub compliance profile; trial accounts can only text verified numbers and often reject free-text messages entirely. When a messaging service SID is set it takes precedence over the phone number."
 msgstr ""
 
 #: includes/configs/settings.php:104
@@ -258,27 +270,27 @@ msgid "Enter the account SID from the Twilio console."
 msgstr ""
 
 #: includes/configs/settings.php:112
-msgid "Auth Token"
-msgstr ""
-
-#: includes/configs/settings.php:113
-msgid "Enter the auth token from the Twilio console. Use the test credentials to try things out without sending real messages."
-msgstr ""
-
-#: includes/configs/settings.php:133
 msgid "API Key SID"
 msgstr ""
 
-#: includes/configs/settings.php:134
-msgid "Enter an API key SID to authenticate with an API key instead of the auth token. Twilio recommends API keys: a leaked key can be revoked on its own, without touching the rest of the account."
+#: includes/configs/settings.php:113
+msgid "Enter an API key SID from the Twilio console. Twilio recommends API keys: a leaked key can be revoked on its own, without touching the rest of the account."
 msgstr ""
 
-#: includes/configs/settings.php:141
+#: includes/configs/settings.php:120
 msgid "API Key Secret"
 msgstr ""
 
-#: includes/configs/settings.php:142
-msgid "Enter the secret shown when the API key was created. Twilio only shows it once. When both key fields are set, they are used instead of the auth token."
+#: includes/configs/settings.php:121
+msgid "Enter the secret shown when the API key was created. Twilio only shows it once."
+msgstr ""
+
+#: includes/configs/settings.php:133
+msgid "Auth Token (deprecated)"
+msgstr ""
+
+#: includes/configs/settings.php:134
+msgid "The account auth token still works when no API key is entered, but support for it will be removed in a future version. Create an API key instead."
 msgstr ""
 
 #: includes/configs/settings.php:155
@@ -309,36 +321,36 @@ msgstr ""
 msgid "Hide"
 msgstr ""
 
-#: twilio-for-hivepress.php:465
+#: twilio-for-hivepress.php:519
 msgid "See the GitHub releases page for the changelog."
 msgstr ""
 
-#: twilio-for-hivepress.php:488
+#: twilio-for-hivepress.php:542
 msgid "Settings"
 msgstr ""
 
-#: twilio-for-hivepress.php:504
+#: twilio-for-hivepress.php:558
 msgid "Check for updates"
 msgstr ""
 
 #. translators: %s: new version number.
-#: twilio-for-hivepress.php:570
+#: twilio-for-hivepress.php:624
 #, php-format
 msgid "A new version of Twilio for HivePress (%s) is available."
 msgstr ""
 
-#: twilio-for-hivepress.php:573
+#: twilio-for-hivepress.php:627
 msgid "Twilio for HivePress is up to date."
 msgstr ""
 
-#: twilio-for-hivepress.php:576
+#: twilio-for-hivepress.php:630
 msgid "No releases have been published on GitHub yet, so there is nothing to update to."
 msgstr ""
 
-#: twilio-for-hivepress.php:579
+#: twilio-for-hivepress.php:633
 msgid "Could not reach GitHub to check for updates. Please try again later."
 msgstr ""
 
-#: twilio-for-hivepress.php:624
+#: twilio-for-hivepress.php:678
 msgid "Could not rename the update directory."
 msgstr ""

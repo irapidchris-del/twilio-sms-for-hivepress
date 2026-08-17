@@ -3,7 +3,7 @@
  * Plugin Name: Twilio for HivePress
  * Plugin URI: https://github.com/irapidchris-del/twilio-sms-for-hivepress
  * Description: Send SMS notifications for HivePress events via Twilio.
- * Version: 1.4.1
+ * Version: 1.5.0
  * Author: ChrisB @ HivePress Community
  * Author URI: https://community.hivepress.io/u/chrisb/summary
  * Text Domain: twilio-for-hivepress
@@ -23,7 +23,7 @@ namespace TwilioForHivePress;
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
-const VERSION = '1.4.1';
+const VERSION = '1.5.0';
 
 /**
  * Registers the extension with HivePress.
@@ -202,20 +202,43 @@ function print_secret_toggles() {
 				return;
 			}
 
+			// Lock the rendered width so the field cannot jump when the
+			// password bullets swap to plain text.
+			input.style.width = input.offsetWidth + 'px';
+			input.style.paddingRight = '2.2em';
+
+			// A relative wrapper keeps the icon inside the field's right
+			// edge, on the same line at every viewport width.
+			var wrap = document.createElement( 'span' );
+
+			wrap.style.position = 'relative';
+			wrap.style.display = 'inline-block';
+
+			input.parentNode.insertBefore( wrap, input );
+			wrap.appendChild( input );
+
+			// A plain icon, deliberately without button chrome.
 			var button = document.createElement( 'button' );
 
 			// Explicitly not a submit button: it sits inside the settings form.
 			button.type = 'button';
-			button.className = 'button';
-			button.style.marginLeft = '0.5rem';
-			button.style.verticalAlign = 'middle';
 			button.setAttribute( 'aria-label', labels.show );
 			button.title = labels.show;
+			button.style.position = 'absolute';
+			button.style.right = '0.4em';
+			button.style.top = '50%';
+			button.style.transform = 'translateY(-50%)';
+			button.style.background = 'none';
+			button.style.border = '0';
+			button.style.padding = '0';
+			button.style.margin = '0';
+			button.style.cursor = 'pointer';
+			button.style.color = '#787c82';
+			button.style.lineHeight = '1';
 
 			var icon = document.createElement( 'span' );
 
 			icon.className = 'dashicons dashicons-visibility';
-			icon.style.verticalAlign = 'text-bottom';
 
 			button.appendChild( icon );
 
@@ -228,7 +251,7 @@ function print_secret_toggles() {
 				button.setAttribute( 'aria-label', hidden ? labels.hide : labels.show );
 			} );
 
-			input.insertAdjacentElement( 'afterend', button );
+			wrap.appendChild( button );
 		} );
 	} )();
 	</script>
@@ -416,6 +439,37 @@ function check_for_update( $update, $plugin_data, $plugin_file ) {
 add_filter( 'update_plugins_github.com', __NAMESPACE__ . '\\check_for_update', 10, 3 );
 
 /**
+ * Renders the GitHub release notes for the update popup.
+ *
+ * The notes are written in Markdown, which the plugin-information popup
+ * displays as literal text. Escaping happens first; only a deliberately tiny
+ * subset is then converted: **bold**, [text](https) links and list bullets.
+ *
+ * @param string $notes Raw release notes.
+ * @return string
+ */
+function format_release_notes( $notes ) {
+	$notes = esc_html( $notes );
+
+	// Bold.
+	$notes = (string) preg_replace( '/\*\*([^*\n]+)\*\*/u', '<strong>$1</strong>', $notes );
+
+	// Links, https only. The URL was entity-escaped above, so match on that.
+	$notes = (string) preg_replace_callback(
+		'/\[([^\]\n]+)\]\((https:\/\/[^)\s]+)\)/u',
+		function ( $matches ) {
+			return '<a href="' . esc_url( html_entity_decode( $matches[2], ENT_QUOTES, 'UTF-8' ) ) . '" target="_blank" rel="noopener noreferrer">' . $matches[1] . '</a>';
+		},
+		$notes
+	);
+
+	// List markers become bullets; wpautop keeps them on their own lines.
+	$notes = (string) preg_replace( '/^- /m', '&#8226; ', $notes );
+
+	return wpautop( $notes );
+}
+
+/**
  * Provides the plugin details for the update information popup.
  *
  * Without this the "View version x.x.x details" link on the Plugins
@@ -462,7 +516,7 @@ function get_plugin_information( $result, $action, $args ) {
 		'download_link' => $release['package'],
 		'sections'      => [
 			'description' => wpautop( esc_html( $plugin_data['Description'] ) ),
-			'changelog'   => $release['notes'] ? wpautop( esc_html( $release['notes'] ) ) : '<p>' . esc_html__( 'See the GitHub releases page for the changelog.', 'twilio-for-hivepress' ) . '</p>',
+			'changelog'   => $release['notes'] ? format_release_notes( $release['notes'] ) : '<p>' . esc_html__( 'See the GitHub releases page for the changelog.', 'twilio-for-hivepress' ) . '</p>',
 		],
 	];
 }
