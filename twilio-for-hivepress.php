@@ -452,11 +452,11 @@ function format_release_notes( $notes ) {
 	$notes = esc_html( $notes );
 
 	// Bold.
-	$notes = (string) preg_replace( '/\\*\\*([^*\\n]+)\\*\\*/u', '<strong>$1</strong>', $notes );
+	$notes = (string) preg_replace( '/\*\*([^*\n]+)\*\*/u', '<strong>$1</strong>', $notes );
 
 	// Links, https only. The URL was entity-escaped above, so match on that.
 	$notes = (string) preg_replace_callback(
-		'/\\[([^\\]\\n]+)\\]\\((https:\\/\\/[^)\\s]+)\\)/u',
+		'/\[([^\]\n]+)\]\((https:\/\/[^)\s]+)\)/u',
 		function ( $matches ) {
 			return '<a href="' . esc_url( html_entity_decode( $matches[2], ENT_QUOTES, 'UTF-8' ) ) . '" target="_blank" rel="noopener noreferrer">' . $matches[1] . '</a>';
 		},

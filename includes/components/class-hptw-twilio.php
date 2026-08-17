@@ -175,12 +175,12 @@ final class Hptw_Twilio extends Component {
 			'user_register'         => __( 'Hi, %user_name%! Thanks for registering, your account is now active.', 'twilio-for-hivepress' ),
 			'user_email_verify'     => __( 'Hi, %user_name%! Please verify your email address using this link: %email_verify_url%', 'twilio-for-hivepress' ),
 			'user_password_request' => __( 'Hi, %user_name%! Use this link to set a new password: %password_reset_url%', 'twilio-for-hivepress' ),
-			'listing_submit'        => __( 'A new listing \"%listing_title%\" has been submitted: %listing_url%', 'twilio-for-hivepress' ),
-			'listing_approve'       => __( 'Hi, %user_name%! Your listing \"%listing_title%\" has been approved: %listing_url%', 'twilio-for-hivepress' ),
-			'listing_reject'        => __( 'Hi, %user_name%! Unfortunately, your listing \"%listing_title%\" has been rejected.', 'twilio-for-hivepress' ),
-			'listing_expire'        => __( 'Hi, %user_name%! Your listing \"%listing_title%\" has expired, renew it here: %listing_url%', 'twilio-for-hivepress' ),
-			'listing_update'        => __( 'Listing \"%listing_title%\" has been updated: %listing_url%', 'twilio-for-hivepress' ),
-			'listing_report'        => __( 'Listing \"%listing_title%\" has been reported: %listing_url%', 'twilio-for-hivepress' ),
+			'listing_submit'        => __( 'A new listing "%listing_title%" has been submitted: %listing_url%', 'twilio-for-hivepress' ),
+			'listing_approve'       => __( 'Hi, %user_name%! Your listing "%listing_title%" has been approved: %listing_url%', 'twilio-for-hivepress' ),
+			'listing_reject'        => __( 'Hi, %user_name%! Unfortunately, your listing "%listing_title%" has been rejected.', 'twilio-for-hivepress' ),
+			'listing_expire'        => __( 'Hi, %user_name%! Your listing "%listing_title%" has expired, renew it here: %listing_url%', 'twilio-for-hivepress' ),
+			'listing_update'        => __( 'Listing "%listing_title%" has been updated: %listing_url%', 'twilio-for-hivepress' ),
+			'listing_report'        => __( 'Listing "%listing_title%" has been reported: %listing_url%', 'twilio-for-hivepress' ),
 			'vendor_register'       => __( 'A new vendor has registered: %vendor_url%', 'twilio-for-hivepress' ),
 		];
 		// phpcs:enable WordPress.WP.I18n.MissingTranslatorsComment, WordPress.WP.I18n.UnorderedPlaceholdersText
