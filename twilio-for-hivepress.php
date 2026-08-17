@@ -3,9 +3,9 @@
  * Plugin Name: Twilio for HivePress
  * Plugin URI: https://github.com/irapidchris-del/twilio-sms-for-hivepress
  * Description: Send SMS notifications for HivePress events via Twilio.
- * Version: 1.1.0
- * Author: ChrisB
- * Author URI: https://community.hivepress.io/u/chrisb
+ * Version: 1.4.0
+ * Author: ChrisB @ HivePress Community
+ * Author URI: https://community.hivepress.io/u/chrisb/summary
  * Text Domain: twilio-for-hivepress
  * Domain Path: /languages/
  * Requires at least: 5.8
@@ -23,26 +23,147 @@ namespace TwilioForHivePress;
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
-// Register the extension directory so HivePress loads the components and configs.
-add_filter(
-	'hivepress/v1/extensions',
-	function( $extensions ) {
+const VERSION = '1.4.0';
+
+/**
+ * Registers the extension with HivePress.
+ *
+ * HivePress collects extension paths through this filter, then autoloads
+ * classes and merges configs from the `includes` directory of every registered
+ * path. The registration form is picked at runtime:
+ *
+ * The bare directory string is used on a normal install, where the folder and
+ * the main file share a name. Given a string, core requires exactly
+ * `{dirname}/{dirname}.php`, so a renamed install folder would silently
+ * disable the whole plugin - not hypothetical here, because the repository is
+ * named `twilio-sms-for-hivepress` while the plugin slug is
+ * `twilio-for-hivepress`, so a GitHub "Download ZIP" unpacks to a folder the
+ * string form can never load from.
+ *
+ * The array form covers that renamed-folder case, but it cannot be used
+ * unconditionally: core's updater probe concatenates every extensions entry
+ * (`file_exists( $dir . $path ... )`, class-core.php:249-250), so an array
+ * entry makes core log "Array to string conversion" on every request unless
+ * an earlier string entry bundles the hivepress-updates package. In the
+ * fallback branch the probe is therefore run here first, over string entries
+ * only, so core's own loop never reaches the array entry. The filter runs at
+ * priority 100 so extensions that bundle hivepress-updates are already listed
+ * by the time that probe runs, and it must be added at file scope; core reads
+ * it before any `plugins_loaded` callback runs.
+ *
+ * @param array<string, mixed> $extensions Registered extensions.
+ * @return array<string, mixed>
+ */
+function register_extension( $extensions ) {
+	if ( file_exists( __DIR__ . '/' . basename( __DIR__ ) . '.php' ) ) {
 		$extensions[] = __DIR__;
 
 		return $extensions;
 	}
-);
+
+	if ( ! isset( $extensions['updates'] ) ) {
+		$path = '/vendor/hivepress/hivepress-updates';
+
+		foreach ( $extensions as $dir ) {
+			if ( is_string( $dir ) && file_exists( $dir . $path . '/hivepress-updates.php' ) ) {
+				$extensions['updates'] = $dir . $path;
+
+				break;
+			}
+		}
+	}
+
+	if ( ! isset( $extensions['updates'] ) ) {
+		/*
+		 * No string entry bundles the updates package, so core's own probe
+		 * would run and concatenate the array entry below, logging a PHP
+		 * warning. Setting the key to a path with no main file satisfies the
+		 * probe's isset() guard, and core silently drops the entry itself
+		 * because the file_exists() check in its details loop fails.
+		 */
+		$extensions['updates'] = __DIR__ . '/vendor/hivepress-updates-absent';
+	}
+
+	$extensions['twilio_for_hivepress'] = [
+		'name'    => 'Twilio for HivePress',
+		'version' => VERSION,
+		'path'    => __DIR__,
+		'url'     => rtrim( plugin_dir_url( __FILE__ ), '/' ),
+	];
+
+	return $extensions;
+}
+
+add_filter( 'hivepress/v1/extensions', __NAMESPACE__ . '\\register_extension', 100 );
 
 /**
- * Loads the plugin translations.
+ * Says so when HivePress is missing.
+ *
+ * `Requires Plugins` is only enforced from WordPress 6.5; below that the
+ * plugin would activate and then do nothing at all, with no settings tab and
+ * no SMS, and no indication why.
  *
  * @return void
  */
-function load_textdomain() {
-	load_plugin_textdomain( 'twilio-for-hivepress', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+function show_dependency_notice() {
+	if ( function_exists( 'hivepress' ) || ! current_user_can( 'activate_plugins' ) ) {
+		return;
+	}
+
+	echo '<div class="notice notice-error"><p>' . esc_html__( 'Twilio for HivePress requires the HivePress plugin to be installed and active. Until then, its SMS settings and messages are unavailable.', 'twilio-for-hivepress' ) . '</p></div>';
 }
 
-add_action( 'init', __NAMESPACE__ . '\\load_textdomain', 1 );
+add_action( 'admin_notices', __NAMESPACE__ . '\\show_dependency_notice' );
+
+/*
+ * Translations load through WordPress's just-in-time textdomain loading from
+ * wp-content/languages/plugins/ (the location Loco Translate calls "System",
+ * which survives plugin updates); there is deliberately no
+ * load_plugin_textdomain() call, matching HivePress core and every official
+ * extension. Because this plugin registers as a HivePress extension, core
+ * additionally loads this path's own languages directory at boot
+ * (Core::load_textdomains), so a bundled .mo would also work. The shipped
+ * .pot is a translation template, not a translation.
+ */
+
+/**
+ * Gets the support URL.
+ *
+ * @return string
+ */
+function get_support_url() {
+	return 'https://ko-fi.com/chrisbathivepresscommunity';
+}
+
+/**
+ * Adds a quiet "Donate" link to this plugin's row meta.
+ *
+ * WordPress fires plugin_row_meta for EVERY plugin on the screen and joins the
+ * items with a pipe, so without the basename test the link would appear on
+ * every row on the site.
+ *
+ * The markup is copied verbatim from the house spec in `releasing.md` rather
+ * than composed here: every plugin's row has to look identical. The label is
+ * exactly "Donate", which is also the wording WordPress uses in the details
+ * popup, and the icon is a Dashicon rather than Font Awesome because Dashicons
+ * is the admin's own font and is always loaded there.
+ *
+ * @param array<string> $meta Row meta links.
+ * @param string        $plugin_file Plugin file the row belongs to.
+ * @return array<string>
+ */
+function add_row_meta( $meta, $plugin_file ) {
+	if ( plugin_basename( __FILE__ ) === $plugin_file ) {
+		$meta[] = '<a href="' . esc_url( get_support_url() ) . '" target="_blank" rel="noopener noreferrer">'
+			. '<span class="dashicons dashicons-star-filled" style="font-size:14px;line-height:1.3;"></span> '
+			. esc_html__( 'Donate', 'twilio-for-hivepress' )
+			. '</a>';
+	}
+
+	return $meta;
+}
+
+add_filter( 'plugin_row_meta', __NAMESPACE__ . '\\add_row_meta', 10, 2 );
 
 /*
  * -------------------------------------------------------------------------
@@ -82,20 +203,30 @@ function get_version() {
 /**
  * Gets the latest GitHub release details, cached for 6 hours.
  *
- * @param bool $force Bypass the cache.
+ * @param bool   $force Bypass the cache.
+ * @param string $state Set to 'ok', 'none' (no releases published) or 'error'.
  * @return array<string, string>|null
  */
-function get_latest_release( $force = false ) {
+function get_latest_release( $force = false, &$state = '' ) {
 	$release = $force ? false : get_site_transient( UPDATE_CACHE_KEY );
 
-	if ( ! is_array( $release ) ) {
+	if ( false === $release || ( ! is_array( $release ) && ! in_array( $release, [ 'none', 'error' ], true ) ) ) {
 		$release = fetch_latest_release();
 
-		// Failures are cached briefly so the API is not queried repeatedly.
-		set_site_transient( UPDATE_CACHE_KEY, $release, $release ? 6 * HOUR_IN_SECONDS : HOUR_IN_SECONDS );
+		// Non-success states are cached briefly so the API is not queried
+		// repeatedly - unauthenticated GitHub allows 60 requests per hour.
+		set_site_transient( UPDATE_CACHE_KEY, $release, is_array( $release ) ? 6 * HOUR_IN_SECONDS : HOUR_IN_SECONDS );
 	}
 
-	return $release ? $release : null;
+	if ( is_array( $release ) && $release ) {
+		$state = 'ok';
+
+		return $release;
+	}
+
+	$state = 'none' === $release ? 'none' : 'error';
+
+	return null;
 }
 
 /**
@@ -104,32 +235,51 @@ function get_latest_release( $force = false ) {
  * Draft and pre-release entries are excluded by the endpoint itself, so
  * publishing a pre-release never triggers an update notice.
  *
- * @return array<string, string>
+ * A 404 is an answer, not a failure to get one: it means no release has been
+ * published yet (or the repository is private), which is reported differently
+ * from GitHub being unreachable.
+ *
+ * @return array<string, string>|string Release details, 'none' or 'error'.
  */
 function fetch_latest_release() {
 	$response = wp_remote_get(
 		'https://api.github.com/repos/' . UPDATE_REPO . '/releases/latest',
 		[
-			'timeout' => 10,
-			'headers' => [ 'Accept' => 'application/vnd.github+json' ],
+			'timeout'    => 10,
+			'headers'    => [ 'Accept' => 'application/vnd.github+json' ],
+
+			// Without an explicit user agent WordPress sends its version and
+			// the site URL with every request; GitHub only needs something
+			// identifying.
+			'user-agent' => UPDATE_SLUG . '/' . VERSION,
 		]
 	);
 
-	if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
-		return [];
+	if ( is_wp_error( $response ) ) {
+		return 'error';
+	}
+
+	$code = wp_remote_retrieve_response_code( $response );
+
+	if ( 404 === $code ) {
+		return 'none';
+	}
+
+	if ( 200 !== $code ) {
+		return 'error';
 	}
 
 	$data = json_decode( wp_remote_retrieve_body( $response ), true );
 
 	if ( ! is_array( $data ) ) {
-		return [];
+		return 'error';
 	}
 
 	// The version is read from the release tag, with or without a "v" prefix.
 	$version = ltrim( (string) ( isset( $data['tag_name'] ) ? $data['tag_name'] : '' ), 'vV' );
 
 	if ( ! $version ) {
-		return [];
+		return 'error';
 	}
 
 	// The update package is the first release asset named `*.zip`.
@@ -146,7 +296,7 @@ function fetch_latest_release() {
 	}
 
 	if ( ! $package ) {
-		return [];
+		return 'error';
 	}
 
 	return [
@@ -233,6 +383,7 @@ function get_plugin_information( $result, $action, $args ) {
 		'version'       => $release['version'],
 		'author'        => '<a href="' . esc_url( $plugin_data['AuthorURI'] ) . '">' . esc_html( $plugin_data['Author'] ) . '</a>',
 		'homepage'      => 'https://github.com/' . UPDATE_REPO,
+		'donate_link'   => get_support_url(),
 		'requires'      => $plugin_data['RequiresWP'],
 		'requires_php'  => $plugin_data['RequiresPHP'],
 		'last_updated'  => $release['published'],
@@ -245,6 +396,30 @@ function get_plugin_information( $result, $action, $args ) {
 }
 
 add_filter( 'plugins_api', __NAMESPACE__ . '\\get_plugin_information', 10, 3 );
+
+/**
+ * Adds the settings link to the plugin row.
+ *
+ * The link points at a HivePress admin page, so it is only useful once
+ * HivePress has actually loaded the extension.
+ *
+ * @param array<string> $links Plugin action links.
+ * @return array<string>
+ */
+function add_settings_link( $links ) {
+	if ( ! function_exists( 'hivepress' ) ) {
+		return $links;
+	}
+
+	return array_merge(
+		[
+			'settings' => '<a href="' . esc_url( admin_url( 'admin.php?page=hp_settings&tab=sms' ) ) . '">' . esc_html__( 'Settings', 'twilio-for-hivepress' ) . '</a>',
+		],
+		$links
+	);
+}
+
+add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), __NAMESPACE__ . '\\add_settings_link' );
 
 /**
  * Adds the manual update check link to the plugin row.
@@ -278,7 +453,8 @@ function handle_update_check() {
 
 	check_admin_referer( 'hptw_check_updates' );
 
-	$release = get_latest_release( true );
+	$state   = '';
+	$release = get_latest_release( true, $state );
 
 	wp_clean_plugins_cache();
 	wp_update_plugins();
@@ -286,7 +462,10 @@ function handle_update_check() {
 	$status = 'none';
 
 	if ( ! $release ) {
-		$status = 'error';
+
+		// A 404 means no release has been published yet - an answer, not a
+		// connectivity failure, so it gets its own message.
+		$status = 'none' === $state ? 'unreleased' : 'error';
 	} elseif ( version_compare( $release['version'], get_version(), '>' ) ) {
 		$status = 'available';
 	}
@@ -321,6 +500,9 @@ function show_update_check_notice() {
 	} elseif ( 'none' === $status ) {
 		$message = __( 'Twilio for HivePress is up to date.', 'twilio-for-hivepress' );
 		$class   = 'notice-success';
+	} elseif ( 'unreleased' === $status ) {
+		$message = __( 'No releases have been published on GitHub yet, so there is nothing to update to.', 'twilio-for-hivepress' );
+		$class   = 'notice-info';
 	} elseif ( 'error' === $status ) {
 		$message = __( 'Could not reach GitHub to check for updates. Please try again later.', 'twilio-for-hivepress' );
 		$class   = 'notice-error';
