@@ -175,12 +175,12 @@ final class Hptw_Twilio extends Component {
 			'user_register'         => __( 'Hi, %user_name%! Thanks for registering, your account is now active.', 'twilio-for-hivepress' ),
 			'user_email_verify'     => __( 'Hi, %user_name%! Please verify your email address using this link: %email_verify_url%', 'twilio-for-hivepress' ),
 			'user_password_request' => __( 'Hi, %user_name%! Use this link to set a new password: %password_reset_url%', 'twilio-for-hivepress' ),
-			'listing_submit'        => __( 'A new listing \"%listing_title%\" has been submitted: %listing_url%', 'twilio-for-hivepress' ),
-			'listing_approve'       => __( 'Hi, %user_name%! Your listing \"%listing_title%\" has been approved: %listing_url%', 'twilio-for-hivepress' ),
-			'listing_reject'        => __( 'Hi, %user_name%! Unfortunately, your listing \"%listing_title%\" has been rejected.', 'twilio-for-hivepress' ),
-			'listing_expire'        => __( 'Hi, %user_name%! Your listing \"%listing_title%\" has expired, renew it here: %listing_url%', 'twilio-for-hivepress' ),
-			'listing_update'        => __( 'Listing \"%listing_title%\" has been updated: %listing_url%', 'twilio-for-hivepress' ),
-			'listing_report'        => __( 'Listing \"%listing_title%\" has been reported: %listing_url%', 'twilio-for-hivepress' ),
+			'listing_submit'        => __( 'A new listing "%listing_title%" has been submitted: %listing_url%', 'twilio-for-hivepress' ),
+			'listing_approve'       => __( 'Hi, %user_name%! Your listing "%listing_title%" has been approved: %listing_url%', 'twilio-for-hivepress' ),
+			'listing_reject'        => __( 'Hi, %user_name%! Unfortunately, your listing "%listing_title%" has been rejected.', 'twilio-for-hivepress' ),
+			'listing_expire'        => __( 'Hi, %user_name%! Your listing "%listing_title%" has expired, renew it here: %listing_url%', 'twilio-for-hivepress' ),
+			'listing_update'        => __( 'Listing "%listing_title%" has been updated: %listing_url%', 'twilio-for-hivepress' ),
+			'listing_report'        => __( 'Listing "%listing_title%" has been reported: %listing_url%', 'twilio-for-hivepress' ),
 			'vendor_register'       => __( 'A new vendor has registered: %vendor_url%', 'twilio-for-hivepress' ),
 		];
 		// phpcs:enable WordPress.WP.I18n.MissingTranslatorsComment, WordPress.WP.I18n.UnorderedPlaceholdersText
@@ -273,7 +273,7 @@ final class Hptw_Twilio extends Component {
 	 * Gets the email description.
 	 *
 	 * The email class's own description meta is deliberately NOT used: it is
-	 * phrased for the email screen (\"This email is sent to users when...\")
+	 * phrased for the email screen ("This email is sent to users when...")
 	 * and reads wrong under an SMS field. The recipient plus the label carry
 	 * the same information, uniformly for every event.
 	 *
@@ -411,7 +411,7 @@ final class Hptw_Twilio extends Component {
 								'description' => '<strong>' . esc_html__( 'SMS sending is currently disabled because the Twilio credentials are missing.', 'twilio-for-hivepress' ) . '</strong> ' . sprintf(
 									/* translators: %s: settings tab URL. */
 									esc_html__( 'Enter them on the %s tab to enable it.', 'twilio-for-hivepress' ),
-									'<a href=\"' . esc_url( admin_url( 'admin.php?page=hp_settings&tab=integrations' ) ) . '\">' . esc_html__( 'Integrations', 'twilio-for-hivepress' ) . '</a>'
+									'<a href="' . esc_url( admin_url( 'admin.php?page=hp_settings&tab=integrations' ) ) . '">' . esc_html__( 'Integrations', 'twilio-for-hivepress' ) . '</a>'
 								),
 							],
 						],
@@ -594,7 +594,7 @@ final class Hptw_Twilio extends Component {
 		// Replace tokens.
 		$text = hp\replace_tokens( $email->get_tokens(), $template );
 
-		// Remove HTML without consuming stray \"<\" characters in text. The /u
+		// Remove HTML without consuming stray "<" characters in text. The /u
 		// flag keeps the byte-level engine from matching inside a multibyte
 		// character; templates and titles routinely carry emoji.
 		$text = $this->replace( '/<(script|style)[^>]*>.*?<\/\1>/isu', '', (string) $text );
@@ -873,10 +873,10 @@ final class Hptw_Twilio extends Component {
 	 * Normalizes the configured sender.
 	 *
 	 * Twilio requires the international format for a sending phone number, but
-	 * a number pasted from the Twilio console often arrives without the \"+\"
+	 * a number pasted from the Twilio console often arrives without the "+"
 	 * (seen in real use: 15005550006). Only values that are clearly a full
 	 * phone number are touched: alphanumeric sender IDs pass through as typed,
-	 * and so do short codes, which have few digits and no \"+\".
+	 * and so do short codes, which have few digits and no "+".
 	 *
 	 * @param string $from Configured sender.
 	 * @return string
