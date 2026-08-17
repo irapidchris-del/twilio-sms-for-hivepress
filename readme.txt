@@ -4,7 +4,7 @@ Tags: hivepress, twilio, sms, notifications
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.5.0
+Stable tag: 1.6.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,7 +21,7 @@ Features:
 * Supports the same tokens as HivePress emails, including model tokens such as %user.first_name% and fallback values such as %listing_title | your listing%.
 * Phone numbers are read from a user attribute of your choice, so users and vendors manage their own number from their account settings.
 * Optionally asks for the phone number during registration, so the registration SMS can reach new users straight away.
-* Authenticates with a Twilio API key (recommended) or the account auth token.
+* Authenticates with a Twilio API key, which can be revoked on its own if it is ever exposed; the account auth token is never stored.
 * Optional administrator phone number for notifications addressed to the site email address (new listings, reports, vendor registrations).
 * Sends via a Twilio phone number or a Twilio Messaging Service.
 * Numbers are normalised to the E.164 format, with an optional default country code for numbers saved in the national format.
@@ -44,18 +44,14 @@ Please note that sending SMS messages usually requires the recipient's consent u
 1. Upload the plugin files to the `/wp-content/plugins/twilio-for-hivepress` directory, or install the release ZIP file via the Plugins screen. If you install from a manually downloaded archive, make sure the extracted plugin folder is named `twilio-for-hivepress`.
 2. Activate the plugin through the Plugins screen. HivePress must be installed and active.
 3. Create a user attribute for phone numbers via Users > Attributes. Set the field name to `phone` (or your own name), choose the Phone field type, and make it editable so users can fill it in via their account settings.
-4. Enter your Twilio credentials via HivePress > Settings > Integrations. You need the account SID, an API key (or the auth token), and either a Twilio phone number or a messaging service SID.
+4. Enter your Twilio credentials via HivePress > Settings > Integrations. You need the account SID, an API key, and either a Twilio phone number or a messaging service SID.
 5. Review the delivery options and per-event messages via HivePress > Settings > SMS.
 
 == Frequently Asked Questions ==
 
-= Does Twilio offer test and live keys? =
+= Why does the plugin not accept my auth token? =
 
-Twilio provides one set of live credentials (the account SID and auth token) plus a separate set of test credentials available on the API keys and tokens page of the Twilio console. Requests made with the test credentials return normal API responses but no messages are sent and nothing is charged. When using the test credentials, set the phone number setting to the magic number +15005550006, as it is the only valid sender for test requests. If you have entered a messaging service SID, clear it temporarily while testing, because it takes precedence over the phone number and test credentials cannot access the live account's messaging services.
-
-= Should I use the auth token or an API key? =
-
-An API key. Twilio recommends API keys for production use because a leaked key can be revoked on its own, while a leaked auth token compromises the whole account. Create one on the API keys and tokens page of the Twilio console, then enter the key SID and secret in the plugin settings; when both are set they are used instead of the auth token. The auth token is deprecated in this plugin and its field will be removed in a future version.
+The plugin authenticates with Twilio API keys only. Twilio recommends them for production use because a leaked key can be revoked on its own, while a leaked auth token compromises the whole account, so the token is deliberately never stored. Create a key on the API keys and tokens page of the Twilio console and enter its SID and secret in the plugin settings. If you configured the auth token on an older version of this plugin, sending pauses after the update until a key is entered; the settings screen says so.
 
 = Why does nothing send from my Twilio trial account? =
 
@@ -94,6 +90,9 @@ Ideally the international E.164 format (e.g. +447700900123). If you set the defa
 The plugin checks its GitHub repository for new releases and shows available updates on your Plugins screen, so you can update with one click just like a WordPress.org plugin. Updates are downloaded from the official release file, so your plugin folder never changes. The first version you install must be added manually; every version after that can be updated in place.
 
 == Changelog ==
+
+= 1.6.0 =
+* The auth token is no longer accepted or stored; the plugin authenticates with Twilio API keys only. Sites configured with a token pause sending after the update until an API key is entered, and the settings screen says so.
 
 = 1.5.0 =
 * The SMS settings tab now shows the last delivery error from Twilio, clearing once a message is delivered, so a misconfigured account is no longer silent.

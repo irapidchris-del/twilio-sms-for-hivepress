@@ -129,30 +129,9 @@ return [
 						],
 					],
 
-					'twilio_auth_token'            => [
-						'label'        => esc_html__( 'Auth Token (deprecated)', 'twilio-for-hivepress' ),
-						'description'  => esc_html__( 'The account auth token still works when no API key is entered, but support for it will be removed in a future version. Create an API key instead.', 'twilio-for-hivepress' ),
-
-						/*
-						 * A text field displayed as a password input, so the
-						 * token is masked on screen and in screenshots. The
-						 * dedicated Password field type cannot be used here:
-						 * it renders without the stored value, so saving the
-						 * tab would silently wipe the token.
-						 */
-						'type'         => 'text',
-						'display_type' => 'password',
-						'max_length'   => 256,
-						'_order'       => 16,
-
-						'attributes'   => [
-							'autocomplete' => 'new-password',
-						],
-					],
-
 					'twilio_from_number'           => [
 						'label'       => esc_html__( 'Phone Number', 'twilio-for-hivepress' ),
-						'description' => esc_html__( 'Enter the Twilio phone number used to send messages, in the international format. Use +15005550006 with the test credentials.', 'twilio-for-hivepress' ),
+						'description' => esc_html__( 'Enter the Twilio phone number used to send messages, in the international format.', 'twilio-for-hivepress' ),
 						'type'        => 'text',
 						'max_length'  => 24,
 						'placeholder' => '+447700900123',

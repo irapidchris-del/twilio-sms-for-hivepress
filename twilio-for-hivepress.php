@@ -3,7 +3,7 @@
  * Plugin Name: Twilio for HivePress
  * Plugin URI: https://github.com/irapidchris-del/twilio-sms-for-hivepress
  * Description: Send SMS notifications for HivePress events via Twilio.
- * Version: 1.5.0
+ * Version: 1.6.0
  * Author: ChrisB @ HivePress Community
  * Author URI: https://community.hivepress.io/u/chrisb/summary
  * Text Domain: twilio-for-hivepress
@@ -23,7 +23,7 @@ namespace TwilioForHivePress;
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
-const VERSION = '1.5.0';
+const VERSION = '1.6.0';
 
 /**
  * Registers the extension with HivePress.
@@ -195,7 +195,7 @@ function print_secret_toggles() {
 			hide: <?php echo wp_json_encode( __( 'Hide', 'twilio-for-hivepress' ) ); ?>
 		};
 
-		[ 'hp_twilio_auth_token', 'hp_twilio_api_key_secret' ].forEach( function( name ) {
+		[ 'hp_twilio_api_key_secret' ].forEach( function( name ) {
 			var input = document.querySelector( 'input[name="' + name + '"]' );
 
 			if ( ! input ) {
@@ -452,11 +452,11 @@ function format_release_notes( $notes ) {
 	$notes = esc_html( $notes );
 
 	// Bold.
-	$notes = (string) preg_replace( '/\*\*([^*\n]+)\*\*/u', '<strong>$1</strong>', $notes );
+	$notes = (string) preg_replace( '/\\*\\*([^*\\n]+)\\*\\*/u', '<strong>$1</strong>', $notes );
 
 	// Links, https only. The URL was entity-escaped above, so match on that.
 	$notes = (string) preg_replace_callback(
-		'/\[([^\]\n]+)\]\((https:\/\/[^)\s]+)\)/u',
+		'/\\[([^\\]\\n]+)\\]\\((https:\\/\\/[^)\\s]+)\\)/u',
 		function ( $matches ) {
 			return '<a href="' . esc_url( html_entity_decode( $matches[2], ENT_QUOTES, 'UTF-8' ) ) . '" target="_blank" rel="noopener noreferrer">' . $matches[1] . '</a>';
 		},
