@@ -32,7 +32,7 @@ return [
 					'twilio_register_phone'  => [
 						'label'       => esc_html__( 'Registration Field', 'twilio-for-hivepress' ),
 						'caption'     => esc_html__( 'Ask for the phone number during registration', 'twilio-for-hivepress' ),
-						'description' => esc_html__( 'Add an optional phone number field to the registration form. Without it, the registration SMS cannot be delivered, because users only add their number in the account settings after signing up.', 'twilio-for-hivepress' ),
+						'description' => esc_html__( 'Add an optional phone number field to the registration form. Without it, the registration SMS cannot be delivered, because users only add their number in the account settings after signing up. Set the Country Code option too, so numbers typed in the national format still deliver.', 'twilio-for-hivepress' ),
 						'type'        => 'checkbox',
 						'_order'      => 15,
 					],
@@ -96,7 +96,7 @@ return [
 		'sections' => [
 			'twilio' => [
 				'title'       => 'Twilio',
-				'description' => esc_html__( 'Enter your Twilio API credentials to enable SMS delivery. You can find them in the Twilio console. Twilio trial accounts can only send messages to verified phone numbers. When a messaging service SID is set it takes precedence over the phone number; clear it while using the test credentials, which cannot access messaging services.', 'twilio-for-hivepress' ),
+				'description' => esc_html__( 'Enter your Twilio API credentials to enable SMS delivery. Create an API key on the API keys and tokens page of the Twilio console and enter it with your account SID. Live sending needs an upgraded (paid) Twilio account with an approved Trust Hub compliance profile; trial accounts can only text verified numbers and often reject free-text messages entirely. When a messaging service SID is set it takes precedence over the phone number.', 'twilio-for-hivepress' ),
 				'_order'      => 15,
 
 				'fields'      => [
@@ -108,9 +108,30 @@ return [
 						'_order'      => 10,
 					],
 
+					'twilio_api_key_sid'           => [
+						'label'       => esc_html__( 'API Key SID', 'twilio-for-hivepress' ),
+						'description' => esc_html__( 'Enter an API key SID from the Twilio console. Twilio recommends API keys: a leaked key can be revoked on its own, without touching the rest of the account.', 'twilio-for-hivepress' ),
+						'type'        => 'text',
+						'max_length'  => 256,
+						'_order'      => 12,
+					],
+
+					'twilio_api_key_secret'        => [
+						'label'        => esc_html__( 'API Key Secret', 'twilio-for-hivepress' ),
+						'description'  => esc_html__( 'Enter the secret shown when the API key was created. Twilio only shows it once.', 'twilio-for-hivepress' ),
+						'type'         => 'text',
+						'display_type' => 'password',
+						'max_length'   => 256,
+						'_order'       => 14,
+
+						'attributes'   => [
+							'autocomplete' => 'new-password',
+						],
+					],
+
 					'twilio_auth_token'            => [
-						'label'        => esc_html__( 'Auth Token', 'twilio-for-hivepress' ),
-						'description'  => esc_html__( 'Enter the auth token from the Twilio console. Use the test credentials to try things out without sending real messages.', 'twilio-for-hivepress' ),
+						'label'        => esc_html__( 'Auth Token (deprecated)', 'twilio-for-hivepress' ),
+						'description'  => esc_html__( 'The account auth token still works when no API key is entered, but support for it will be removed in a future version. Create an API key instead.', 'twilio-for-hivepress' ),
 
 						/*
 						 * A text field displayed as a password input, so the
@@ -122,28 +143,7 @@ return [
 						'type'         => 'text',
 						'display_type' => 'password',
 						'max_length'   => 256,
-						'_order'       => 20,
-
-						'attributes'   => [
-							'autocomplete' => 'new-password',
-						],
-					],
-
-					'twilio_api_key_sid'           => [
-						'label'       => esc_html__( 'API Key SID', 'twilio-for-hivepress' ),
-						'description' => esc_html__( 'Enter an API key SID to authenticate with an API key instead of the auth token. Twilio recommends API keys: a leaked key can be revoked on its own, without touching the rest of the account.', 'twilio-for-hivepress' ),
-						'type'        => 'text',
-						'max_length'  => 256,
-						'_order'      => 22,
-					],
-
-					'twilio_api_key_secret'        => [
-						'label'        => esc_html__( 'API Key Secret', 'twilio-for-hivepress' ),
-						'description'  => esc_html__( 'Enter the secret shown when the API key was created. Twilio only shows it once. When both key fields are set, they are used instead of the auth token.', 'twilio-for-hivepress' ),
-						'type'         => 'text',
-						'display_type' => 'password',
-						'max_length'   => 256,
-						'_order'       => 24,
+						'_order'       => 16,
 
 						'attributes'   => [
 							'autocomplete' => 'new-password',

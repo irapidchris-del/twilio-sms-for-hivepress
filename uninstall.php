@@ -42,6 +42,9 @@ $hptw_delete_all = (bool) get_option( 'hp_twilio_delete_data' );
 // works under a persistent object cache, where transients are not in wp_options at all.
 delete_site_transient( 'hptw_github_release' );
 
+// The last-delivery-failure notice is regenerable runtime state, not owner data.
+delete_option( 'hp_twilio_last_error' );
+
 // Any other transient the plugin has ever set. Nothing writes one today, but a transient is stored
 // as "_transient_{name}" plus a separate "_transient_timeout_{name}" row, so the prefix sweep used
 // for options further down cannot match them.
