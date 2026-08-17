@@ -61,8 +61,16 @@ final class Hptw_Twilio extends Component {
 		// Add email hooks.
 		add_action( 'init', [ $this, 'add_email_hooks' ], 100 );
 
-		// Add the phone field to the registration form.
-		add_filter( 'hivepress/v1/forms/user_register', [ $this, 'add_registration_field' ], 100, 2 );
+		/*
+		 * Add the phone field to the registration form, at priority 200: the
+		 * Attribute component registers its own user_register filter at 100
+		 * from an init callback, which is LATER than this constructor, so at
+		 * equal priority this filter would run first and a required phone
+		 * attribute would be downgraded to the optional field (found live on
+		 * staging, 2026-08-17). Running after core lets the isset guard defer
+		 * to any pre-existing definition, required flag intact.
+		 */
+		add_filter( 'hivepress/v1/forms/user_register', [ $this, 'add_registration_field' ], 200, 2 );
 
 		/*
 		 * Save the registration phone at priority 1: core sends the
@@ -167,12 +175,12 @@ final class Hptw_Twilio extends Component {
 			'user_register'         => __( 'Hi, %user_name%! Thanks for registering, your account is now active.', 'twilio-for-hivepress' ),
 			'user_email_verify'     => __( 'Hi, %user_name%! Please verify your email address using this link: %email_verify_url%', 'twilio-for-hivepress' ),
 			'user_password_request' => __( 'Hi, %user_name%! Use this link to set a new password: %password_reset_url%', 'twilio-for-hivepress' ),
-			'listing_submit'        => __( 'A new listing "%listing_title%" has been submitted: %listing_url%', 'twilio-for-hivepress' ),
-			'listing_approve'       => __( 'Hi, %user_name%! Your listing "%listing_title%" has been approved: %listing_url%', 'twilio-for-hivepress' ),
-			'listing_reject'        => __( 'Hi, %user_name%! Unfortunately, your listing "%listing_title%" has been rejected.', 'twilio-for-hivepress' ),
-			'listing_expire'        => __( 'Hi, %user_name%! Your listing "%listing_title%" has expired, renew it here: %listing_url%', 'twilio-for-hivepress' ),
-			'listing_update'        => __( 'Listing "%listing_title%" has been updated: %listing_url%', 'twilio-for-hivepress' ),
-			'listing_report'        => __( 'Listing "%listing_title%" has been reported: %listing_url%', 'twilio-for-hivepress' ),
+			'listing_submit'        => __( 'A new listing \"%listing_title%\" has been submitted: %listing_url%', 'twilio-for-hivepress' ),
+			'listing_approve'       => __( 'Hi, %user_name%! Your listing \"%listing_title%\" has been approved: %listing_url%', 'twilio-for-hivepress' ),
+			'listing_reject'        => __( 'Hi, %user_name%! Unfortunately, your listing \"%listing_title%\" has been rejected.', 'twilio-for-hivepress' ),
+			'listing_expire'        => __( 'Hi, %user_name%! Your listing \"%listing_title%\" has expired, renew it here: %listing_url%', 'twilio-for-hivepress' ),
+			'listing_update'        => __( 'Listing \"%listing_title%\" has been updated: %listing_url%', 'twilio-for-hivepress' ),
+			'listing_report'        => __( 'Listing \"%listing_title%\" has been reported: %listing_url%', 'twilio-for-hivepress' ),
 			'vendor_register'       => __( 'A new vendor has registered: %vendor_url%', 'twilio-for-hivepress' ),
 		];
 		// phpcs:enable WordPress.WP.I18n.MissingTranslatorsComment, WordPress.WP.I18n.UnorderedPlaceholdersText
@@ -265,7 +273,7 @@ final class Hptw_Twilio extends Component {
 	 * Gets the email description.
 	 *
 	 * The email class's own description meta is deliberately NOT used: it is
-	 * phrased for the email screen ("This email is sent to users when...")
+	 * phrased for the email screen (\"This email is sent to users when...\")
 	 * and reads wrong under an SMS field. The recipient plus the label carry
 	 * the same information, uniformly for every event.
 	 *
@@ -403,13 +411,41 @@ final class Hptw_Twilio extends Component {
 								'description' => '<strong>' . esc_html__( 'SMS sending is currently disabled because the Twilio credentials are missing.', 'twilio-for-hivepress' ) . '</strong> ' . sprintf(
 									/* translators: %s: settings tab URL. */
 									esc_html__( 'Enter them on the %s tab to enable it.', 'twilio-for-hivepress' ),
-									'<a href="' . esc_url( admin_url( 'admin.php?page=hp_settings&tab=integrations' ) ) . '">' . esc_html__( 'Integrations', 'twilio-for-hivepress' ) . '</a>'
+									'<a href=\"' . esc_url( admin_url( 'admin.php?page=hp_settings&tab=integrations' ) ) . '\">' . esc_html__( 'Integrations', 'twilio-for-hivepress' ) . '</a>'
 								),
 							],
 						],
 					],
 				]
 			);
+		} else {
+
+			// Surface the last delivery failure: the matching email delivers,
+			// so nothing else tells the admin the SMS half is failing.
+			$error = get_option( hp\prefix( 'twilio_last_error' ) );
+
+			if ( is_array( $error ) && ! empty( $error['message'] ) ) {
+				$settings = hp\merge_arrays(
+					$settings,
+					[
+						'sms' => [
+							'sections' => [
+								'delivery' => [
+									'description' => '<strong>' . sprintf(
+										/* translators: %s: date and time. */
+										esc_html__( 'The last SMS attempt failed (%s).', 'twilio-for-hivepress' ),
+										esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), (int) hp\get_array_value( $error, 'time' ) + (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS ) ) )
+									) . '</strong> ' . sprintf(
+										/* translators: %s: error message from Twilio. */
+										esc_html__( 'Twilio said: %s. This notice clears when a message is delivered.', 'twilio-for-hivepress' ),
+										'<i>' . esc_html( hp\get_array_value( $error, 'message' ) ) . '</i>'
+									),
+								],
+							],
+						],
+					]
+				);
+			}
 		}
 
 		return $settings;
@@ -558,7 +594,7 @@ final class Hptw_Twilio extends Component {
 		// Replace tokens.
 		$text = hp\replace_tokens( $email->get_tokens(), $template );
 
-		// Remove HTML without consuming stray "<" characters in text. The /u
+		// Remove HTML without consuming stray \"<\" characters in text. The /u
 		// flag keeps the byte-level engine from matching inside a multibyte
 		// character; templates and titles routinely carry emoji.
 		$text = $this->replace( '/<(script|style)[^>]*>.*?<\/\1>/isu', '', (string) $text );
@@ -675,11 +711,15 @@ final class Hptw_Twilio extends Component {
 		}
 
 		$args['fields'][ $attribute ] = [
-			'label'      => __( 'Phone Number', 'twilio-for-hivepress' ),
-			'type'       => 'phone',
-			'required'   => false,
-			'max_length' => 24,
-			'_order'     => 50,
+			'label'       => __( 'Phone Number', 'twilio-for-hivepress' ),
+			'type'        => 'phone',
+			'required'    => false,
+			'max_length'  => 24,
+
+			// Numbers typed in the national format fail silently unless the
+			// Country Code setting converts them, so lead by example.
+			'placeholder' => '+447700900123',
+			'_order'      => 50,
 		];
 
 		return $args;
@@ -833,10 +873,10 @@ final class Hptw_Twilio extends Component {
 	 * Normalizes the configured sender.
 	 *
 	 * Twilio requires the international format for a sending phone number, but
-	 * a number pasted from the Twilio console often arrives without the "+"
+	 * a number pasted from the Twilio console often arrives without the \"+\"
 	 * (seen in real use: 15005550006). Only values that are clearly a full
 	 * phone number are touched: alphanumeric sender IDs pass through as typed,
-	 * and so do short codes, which have few digits and no "+".
+	 * and so do short codes, which have few digits and no \"+\".
 	 *
 	 * @param string $from Configured sender.
 	 * @return string
@@ -934,7 +974,7 @@ final class Hptw_Twilio extends Component {
 
 		// Check response.
 		if ( is_wp_error( $response ) ) {
-			$this->log( $response->get_error_message() );
+			$this->record_failure( $response->get_error_message() );
 
 			return false;
 		}
@@ -957,12 +997,42 @@ final class Hptw_Twilio extends Component {
 			}
 
 			// Mask phone numbers echoed back in API error messages.
-			$this->log( $this->replace( '/\+\d{5,13}(\d{2})/u', '+***$1', $message ) );
+			$this->record_failure( $this->replace( '/\+\d{5,13}(\d{2})/u', '+***$1', $message ) );
 
 			return false;
 		}
 
+		// A delivery succeeded, so any recorded failure is stale.
+		if ( get_option( hp\prefix( 'twilio_last_error' ) ) ) {
+			delete_option( hp\prefix( 'twilio_last_error' ) );
+		}
+
 		return true;
+	}
+
+	/**
+	 * Records a delivery failure where the admin can see it.
+	 *
+	 * SMS failure is asymmetric: the email delivers, the SMS silently does
+	 * not, and by default the only trace is an opt-in log the owner may never
+	 * find. Twilio trial and unverified-compliance accounts reject every send
+	 * this way. The last provider message (already masked by the caller, and
+	 * never containing the recipient) is therefore surfaced on the SMS
+	 * settings tab until a send succeeds.
+	 *
+	 * @param string $message Provider message, already masked.
+	 */
+	protected function record_failure( $message ) {
+		$this->log( $message );
+
+		update_option(
+			hp\prefix( 'twilio_last_error' ),
+			[
+				'message' => mb_substr( (string) $message, 0, 500 ),
+				'time'    => time(),
+			],
+			false
+		);
 	}
 
 	/**
