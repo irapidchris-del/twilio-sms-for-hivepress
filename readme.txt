@@ -4,7 +4,7 @@ Tags: hivepress, twilio, sms, notifications
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.4.1
+Stable tag: 1.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -28,6 +28,15 @@ Features:
 * Optional error logging for troubleshooting deliveries.
 * Automatic updates from GitHub: once installed, new releases appear on your Plugins screen for one-click updating, just like a WordPress.org plugin.
 
+**Twilio account requirements.** Live sending needs a properly set-up Twilio account; a free trial cannot deliver this plugin's messages. Expect all four of these steps in the Twilio console before the first SMS arrives:
+
+1. **Fund the account** (upgrade off the free trial; the minimum top-up was 20 GBP at the time of writing). Trials only text verified numbers and commonly reject free-text bodies altogether (error 572006).
+2. **Create an API key** on the API keys and tokens page, and enter its SID and secret in the plugin settings.
+3. **Buy an SMS-capable phone number**. The monthly fee (roughly 2 GBP for a UK number at the time of writing) is deducted from the account balance, so the initial top-up covers it. A trial number does not always survive the upgrade, and in some countries (including the UK) Twilio requires regulatory documentation before a number can be purchased.
+4. **Pass the Trust Hub compliance check** (KYC). Until the profile is approved, every send is rejected with error 20003.
+
+The plugin shows the last delivery error on its settings screen, so each of these states is visible rather than silent.
+
 Please note that sending SMS messages usually requires the recipient's consent under regulations such as UK PECR and GDPR. Only collect phone numbers with a clear explanation of how they will be used.
 
 == Installation ==
@@ -46,11 +55,11 @@ Twilio provides one set of live credentials (the account SID and auth token) plu
 
 = Should I use the auth token or an API key? =
 
-An API key. Twilio recommends API keys for production use because a leaked key can be revoked on its own, while a leaked auth token compromises the whole account. Create one on the API keys and tokens page of the Twilio console, then enter the key SID and secret in the plugin settings; when both are set they are used instead of the auth token.
+An API key. Twilio recommends API keys for production use because a leaked key can be revoked on its own, while a leaked auth token compromises the whole account. Create one on the API keys and tokens page of the Twilio console, then enter the key SID and secret in the plugin settings; when both are set they are used instead of the auth token. The auth token is deprecated in this plugin and its field will be removed in a future version.
 
 = Why does nothing send from my Twilio trial account? =
 
-New Twilio trial accounts are heavily restricted: they can only text phone numbers you have verified in the Twilio console, and many trials only allow predefined message templates, so the free-text messages this plugin sends are rejected with error 572006. With the logging option enabled these rejections appear in the PHP error log with Twilio's own explanation. For real delivery you generally need an upgraded account, and senders in some countries (including the UK) also need an approved compliance profile in Twilio's Trust Hub before messages go through (error 20003 until then).
+New Twilio trial accounts are heavily restricted: they can only text phone numbers you have verified in the Twilio console, and many trials only allow predefined message templates, so the free-text messages this plugin sends are rejected with error 572006. With the logging option enabled these rejections appear in the PHP error log with Twilio's own explanation, and the settings screen shows the last delivery error either way. For real delivery you generally need an upgraded account, and senders in some countries (including the UK) also need an approved compliance profile in Twilio's Trust Hub before messages go through (error 20003 until then). Plan to purchase a phone number as well: a trial number does not always survive the upgrade.
 
 = Why do new users not receive the registration SMS? =
 
@@ -58,7 +67,7 @@ The standard HivePress registration form does not ask for a phone number, so at 
 
 = Why is a notification not sent as an SMS? =
 
-An SMS is sent only when the Twilio credentials are set, the event has a non-empty message, and the recipient has a valid phone number. Enable the logging option via HivePress > Settings > SMS to record delivery errors in the PHP error log. Log entries may include partially masked recipient details, so make sure the log file is not publicly accessible. Also note that Twilio trial accounts can only send messages to verified phone numbers.
+An SMS is sent only when the Twilio credentials are set, the event has a non-empty message, and the recipient has a valid phone number. The settings screen shows the last delivery error reported by Twilio, and the logging option via HivePress > Settings > SMS records delivery errors in the PHP error log. Log entries may include partially masked recipient details, so make sure the log file is not publicly accessible. Also note that Twilio trial accounts can only send messages to verified phone numbers.
 
 = How do I disable the SMS for a specific event? =
 
@@ -85,6 +94,15 @@ Ideally the international E.164 format (e.g. +447700900123). If you set the defa
 The plugin checks its GitHub repository for new releases and shows available updates on your Plugins screen, so you can update with one click just like a WordPress.org plugin. Updates are downloaded from the official release file, so your plugin folder never changes. The first version you install must be added manually; every version after that can be updated in place.
 
 == Changelog ==
+
+= 1.5.0 =
+* The SMS settings tab now shows the last delivery error from Twilio, clearing once a message is delivered, so a misconfigured account is no longer silent.
+* The auth token is deprecated in favour of API keys; it still works when no key is entered, and will be removed in a future version.
+* Fixed a required phone attribute being downgraded to optional on the registration form when the registration field setting was also enabled.
+* The show/hide control is now a plain icon inside the field, and revealing a value no longer shifts the layout.
+* The registration phone field shows an international format example, and the settings recommend setting the country code alongside it.
+* Release notes now render properly in the update details popup.
+* Documented the paid Twilio account and Trust Hub requirements.
 
 = 1.4.1 =
 * Added a show/hide toggle to the auth token and API key secret fields.
