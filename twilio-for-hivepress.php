@@ -3,7 +3,7 @@
  * Plugin Name: Twilio for HivePress
  * Plugin URI: https://github.com/irapidchris-del/twilio-sms-for-hivepress
  * Description: Send SMS notifications for HivePress events via Twilio.
- * Version: 1.6.0
+ * Version: 1.6.1
  * Author: ChrisB @ HivePress Community
  * Author URI: https://community.hivepress.io/u/chrisb/summary
  * Text Domain: twilio-for-hivepress
@@ -23,7 +23,7 @@ namespace TwilioForHivePress;
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
-const VERSION = '1.6.0';
+const VERSION = '1.6.1';
 
 /**
  * Registers the extension with HivePress.
@@ -166,25 +166,90 @@ function add_row_meta( $meta, $plugin_file ) {
 add_filter( 'plugin_row_meta', __NAMESPACE__ . '\\add_row_meta', 10, 2 );
 
 /**
- * Adds show/hide toggles to the masked credential fields.
+ * Checks whether the current screen is the Integrations settings tab.
  *
- * The auth token and API key secret render as password-type inputs, so a
- * toggle is needed to read back what is stored. HivePress ships its own eye
- * button, but its handler lives in the front-end script bundle, which is
- * never loaded in wp-admin - so a dead button would render. This one is
- * self-contained: Dashicons are always available in the admin, and the
- * button flips the input type in place.
- *
- * @return void
+ * @return bool
  */
-function print_secret_toggles() {
+function is_credentials_screen() {
 
 	// phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only screen check that changes nothing; the capability test below is the gate.
 	$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
 	$tab  = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : '';
 	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
-	if ( 'hp_settings' !== $page || 'integrations' !== $tab || ! current_user_can( 'manage_options' ) ) {
+	return 'hp_settings' === $page && 'integrations' === $tab && current_user_can( 'manage_options' );
+}
+
+/**
+ * Prints the stylesheet for the masked credential field.
+ *
+ * Core's admin stylesheet gives text, email, tel and url inputs a 25em width
+ * (backend.min.css, the `.hp-form--table input[type=text]` list) but omits
+ * `input[type=password]`, so a password-display field falls through to the
+ * 100% width that common.min.css puts on `.hp-field--password` and stretches
+ * across the whole screen. The width therefore lives on a wrapper span: the
+ * input fills the wrapper in both states of the show/hide toggle, so nothing
+ * moves when the type flips, the icon stays inside the field's right edge,
+ * and on narrow screens the wrapper shrinks with the row exactly like core's
+ * own fields. The first rule sizes the bare input before the toggle script
+ * wraps it, so the field never flashes full-width while the page loads.
+ *
+ * @return void
+ */
+function print_secret_styles() {
+	if ( ! is_credentials_screen() ) {
+		return;
+	}
+	?>
+	<style>
+		.hp-form--table input[name="hp_twilio_api_key_secret"] {
+			width: 25em;
+			max-width: 100%;
+			box-sizing: border-box;
+		}
+
+		.hp-form--table .hptw-secret-wrap {
+			position: relative;
+			display: inline-block;
+			width: 25em;
+			max-width: 100%;
+		}
+
+		.hp-form--table .hptw-secret-wrap input {
+			width: 100%;
+			box-sizing: border-box;
+			padding-right: 2.2em;
+		}
+
+		/* Match core, which widens every form-table input to the full row
+		   below the wp-admin mobile breakpoint. */
+		@media screen and (max-width: 782px) {
+
+			.hp-form--table input[name="hp_twilio_api_key_secret"],
+			.hp-form--table .hptw-secret-wrap {
+				width: 100%;
+			}
+		}
+	</style>
+	<?php
+}
+
+add_action( 'admin_head', __NAMESPACE__ . '\\print_secret_styles' );
+
+/**
+ * Adds a show/hide toggle to the masked credential field.
+ *
+ * The API key secret renders as a password-type input, so a toggle is needed
+ * to read back what is stored. HivePress ships its own eye button, but its
+ * handler lives in the front-end script bundle, which is never loaded in
+ * wp-admin - so a dead button would render. This one is self-contained:
+ * Dashicons are always available in the admin, and the button flips the
+ * input type in place.
+ *
+ * @return void
+ */
+function print_secret_toggles() {
+	if ( ! is_credentials_screen() ) {
 		return;
 	}
 	?>
@@ -202,17 +267,11 @@ function print_secret_toggles() {
 				return;
 			}
 
-			// Lock the rendered width so the field cannot jump when the
-			// password bullets swap to plain text.
-			input.style.width = input.offsetWidth + 'px';
-			input.style.paddingRight = '2.2em';
-
-			// A relative wrapper keeps the icon inside the field's right
-			// edge, on the same line at every viewport width.
+			// The wrapper carries the field's width and position rules; see
+			// the stylesheet printed by print_secret_styles().
 			var wrap = document.createElement( 'span' );
 
-			wrap.style.position = 'relative';
-			wrap.style.display = 'inline-block';
+			wrap.className = 'hptw-secret-wrap';
 
 			input.parentNode.insertBefore( wrap, input );
 			wrap.appendChild( input );
