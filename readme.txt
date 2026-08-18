@@ -4,7 +4,7 @@ Tags: hivepress, twilio, sms, notifications
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.6.0
+Stable tag: 1.6.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -90,6 +90,9 @@ Ideally the international E.164 format (e.g. +447700900123). If you set the defa
 The plugin checks its GitHub repository for new releases and shows available updates on your Plugins screen, so you can update with one click just like a WordPress.org plugin. Updates are downloaded from the official release file, so your plugin folder never changes. The first version you install must be added manually; every version after that can be updated in place.
 
 == Changelog ==
+
+= 1.6.1 =
+* Fixed the API key secret field stretching across the whole settings screen; it now matches the width of the other credential fields at every screen size.
 
 = 1.6.0 =
 * The auth token is no longer accepted or stored; the plugin authenticates with Twilio API keys only. Sites configured with a token pause sending after the update until an API key is entered, and the settings screen says so.
