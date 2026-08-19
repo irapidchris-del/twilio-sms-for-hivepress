@@ -3,7 +3,7 @@
  * Plugin Name: Twilio for HivePress
  * Plugin URI: https://github.com/irapidchris-del/twilio-sms-for-hivepress
  * Description: Send SMS notifications for HivePress events via Twilio.
- * Version: 1.6.1
+ * Version: 1.7.0
  * Author: ChrisB @ HivePress Community
  * Author URI: https://community.hivepress.io/u/chrisb/summary
  * Text Domain: twilio-for-hivepress
@@ -23,7 +23,7 @@ namespace TwilioForHivePress;
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
-const VERSION = '1.6.1';
+const VERSION = '1.7.0';
 
 /**
  * Registers the extension with HivePress.

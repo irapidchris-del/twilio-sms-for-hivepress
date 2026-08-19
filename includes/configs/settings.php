@@ -65,6 +65,22 @@ return [
 				],
 			],
 
+			'login'     => [
+				'title'       => esc_html__( 'Sign-In Codes', 'twilio-for-hivepress' ),
+				'description' => esc_html__( 'Let users sign in without a password by texting a six-digit code to the phone number saved on their account. Codes expire after 10 minutes and requests are rate limited to protect you from SMS pumping fraud, but every code still costs one message at your Twilio rate. If your site uses reCAPTCHA or Turnstile, add the SMS code request form to its protected forms so automated abuse is blocked before a text is sent.', 'twilio-for-hivepress' ),
+				'_order'      => 15,
+
+				'fields'      => [
+					'twilio_otp_login' => [
+						'label'       => esc_html__( 'SMS Sign-In', 'twilio-for-hivepress' ),
+						'caption'     => esc_html__( 'Let users sign in with a code sent by SMS', 'twilio-for-hivepress' ),
+						'description' => esc_html__( 'Adds a "Sign in with an SMS code" link to the sign-in form. The code is sent through the Twilio API to the phone number saved on the matching account, so only users who already added a number can use it. If two accounts share one number, neither can sign in with a code until the duplicate is removed.', 'twilio-for-hivepress' ),
+						'type'        => 'checkbox',
+						'_order'      => 10,
+					],
+				],
+			],
+
 			'events'    => [
 				'title'       => esc_html__( 'Events', 'twilio-for-hivepress' ),
 				// phpcs:ignore WordPress.WP.I18n.MissingTranslatorsComment -- %user.first_name% is a literal HivePress token example, not a printf directive.

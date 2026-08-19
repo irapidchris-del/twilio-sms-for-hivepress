@@ -1,0 +1,51 @@
+.hptw-otp-hidden {
+	display: none;
+}
+
+.hp-form--hptw-otp-verify {
+	margin-top: 1.5rem;
+}
+
+/*
+ * The password link is a template part in the modal container rather than a form footer, so core's
+ * form layout gives it no spacing at all and it sits hard against the Send Code button. Block with
+ * centred text puts it under the middle of that button, where a secondary action reads as belonging
+ * to it rather than to the field above.
+ *
+ * The vertical padding is a tap target, not decoration: measured 224x17 on staging (2026-08-18),
+ * under the 24px minimum in WCAG 2.5.8. Padding rather than a min-height so the whole strip stays
+ * clickable at any font size, and the gap above is a margin so the two do not run together.
+ */
+.hp-form__action--hptw-otp-back {
+	display: block;
+	margin-top: 1rem;
+	padding: 0.5rem 0;
+	text-align: center;
+}
+
+/*
+ * The phone field is the only control in the modal that is not full width: measured 229px against
+ * a 279px code field and button at 390px on staging (2026-08-18), and 229px again at 458px, so it
+ * had stopped scaling with the modal altogether.
+ *
+ * The class is "hp-field--tel", NOT "hp-field--phone": core builds it from the field's
+ * display_type (fields/class-field.php:249) and the Phone field sets display_type to 'tel'
+ * (fields/class-phone.php:84). The first attempt at this rule targeted --phone and the
+ * intl-tel-input ".iti" wrapper, matched nothing at all, and shipped looking correct because the
+ * field is full width on a stock theme anyway - staging measured it still at 229px afterwards
+ * (2026-08-18). Assert the selector matches an element, not just that the result looks right.
+ *
+ * The ".iti" parts are kept deliberately: core mounts intl-tel-input on this field through its
+ * "phone" component, and when it does it wraps the input in a .iti element that would otherwise
+ * size itself. They are inert when the wrapper is absent.
+ *
+ * Scoping by the modal's id rather than adding !important is what wins against a theme rule
+ * without taking the argument anywhere else on the site: the id travels with the node when
+ * FancyBox moves the modal into its overlay, so the rule still applies once it is open.
+ */
+#hptw_otp_login_modal .hp-field--tel,
+#hptw_otp_login_modal .iti,
+#hptw_otp_login_modal .iti input[type="tel"] {
+	box-sizing: border-box;
+	width: 100%;
+}

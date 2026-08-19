@@ -4,7 +4,7 @@ Tags: hivepress, twilio, sms, notifications
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.6.1
+Stable tag: 1.7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,11 +21,13 @@ Features:
 * Supports the same tokens as HivePress emails, including model tokens such as %user.first_name% and fallback values such as %listing_title | your listing%.
 * Phone numbers are read from a user attribute of your choice, so users and vendors manage their own number from their account settings.
 * Optionally asks for the phone number during registration, so the registration SMS can reach new users straight away.
+* Passwordless sign-in: let users sign in with a six-digit code sent by SMS, switched off by default.
 * Authenticates with a Twilio API key, which can be revoked on its own if it is ever exposed; the account auth token is never stored.
 * Optional administrator phone number for notifications addressed to the site email address (new listings, reports, vendor registrations).
 * Sends via a Twilio phone number or a Twilio Messaging Service.
 * Numbers are normalised to the E.164 format, with an optional default country code for numbers saved in the national format.
 * Optional error logging for troubleshooting deliveries.
+* Optional integration with the Notifications for HivePress extension (version 1.1.0 or later): SMS becomes a choice on each member's own Notification Settings page, strictly opt-in, with quiet hours respected.
 * Automatic updates from GitHub: once installed, new releases appear on your Plugins screen for one-click updating, just like a WordPress.org plugin.
 
 **Twilio account requirements.** Live sending needs a properly set-up Twilio account; a free trial cannot deliver this plugin's messages. Expect all four of these steps in the Twilio console before the first SMS arrives:
@@ -36,6 +38,10 @@ Features:
 4. **Pass the Trust Hub compliance check** (KYC). Until the profile is approved, every send is rejected with error 20003.
 
 The plugin shows the last delivery error on its settings screen, so each of these states is visible rather than silent.
+
+**SMS as a notification channel.** With the Notifications for HivePress extension (version 1.1.0 or later) active, a Member Opt-in toggle appears via HivePress > Settings > SMS > Member Preferences. The toggle ships off. With it on, SMS joins On-site, Email and Push on each member's Notification Settings page: for events enabled under the notification settings, a text only goes to a member who has ticked SMS there, while events you have left disabled there keep today's behaviour and go to anyone with a saved message. No role default ever grants SMS; every member starts unticked and opts in themselves. Quiet hours are respected on member texts, and a text that falls inside them is dropped, not queued for later. Announcements are never texted. Texts to the administrator phone are unaffected by the toggle, member preferences and quiet hours. Notifications with no email behind them, such as a completed booking or a new favourite, are texted with the wording from the notification settings and only alongside the on-site notification.
+
+**For developers.** The `hptw_sms_send` filter now receives two extra arguments, the recipient's user object (or null) and the recipient email address; callbacks registered with up to four accepted arguments keep working unchanged. Notifications without an email are texted through the new `hptw_channel_sms_text` filter, which receives the text and the notification object and can veto the send by returning an empty value. The public `send_message()` method is for trusted callers only: destinations must be resolved server-side, never taken from request input, and it applies no rate limiting of its own, so it must never be exposed to visitors.
 
 Please note that sending SMS messages usually requires the recipient's consent under regulations such as UK PECR and GDPR. Only collect phone numbers with a clear explanation of how they will be used.
 
@@ -69,6 +75,22 @@ An SMS is sent only when the Twilio credentials are set, the event has a non-emp
 
 Clear the message for that event via HivePress > Settings > SMS and save the settings. An empty message disables the SMS for that event.
 
+= How do I let members choose whether they receive texts? =
+
+Install the Notifications for HivePress extension (version 1.1.0 or later) and tick Member Opt-in via HivePress > Settings > SMS > Member Preferences. SMS then appears on each member's Notification Settings page. Be aware that everyone starts unticked: for events enabled under the notification settings, texts to members stop until each person opts in, so read the description on that settings section before ticking the box. Texts to the administrator phone are not affected, and events left disabled under the notification settings keep today's behaviour.
+
+= Are there limits on how many texts a member can receive? =
+
+Yes. Texts sent through member preferences are capped per recipient, at 10 texts per hour by default, so a runaway loop or a burst of events cannot flood one phone or run up your Twilio bill. Texts over the cap are dropped, with a log line when logging is enabled. Texts to the administrator phone are not capped. A slot is counted when a text is cleared to send, so a text that a later filter callback vetoes or that fails at Twilio still uses up one of that hour's slots. Developers can adjust the cap with the `hptw_sms_member_limits` filter; there is deliberately no settings field for it.
+
+= How do users sign in with an SMS code? =
+
+Enable SMS Sign-In in the Sign-In Codes section of the SMS settings tab. A "Sign in with an SMS code" link then appears on the sign-in form. The user enters the phone number saved on their account, receives a six-digit code, and types it in to sign in. Codes expire after 10 minutes, and requests are rate limited. You can protect the request form with reCAPTCHA via the Protected Forms option on the Integrations tab.
+
+= Are sign-in code requests rate limited? =
+
+Yes. Code requests are limited per phone number and per visitor address, and a site-wide hourly budget caps how many codes the whole site can send, so automated requests cannot run up your Twilio bill. Visitors who share one network address, such as an office or a mobile network gateway, share a visitor allowance, and the site-wide budget is the backstop for such shared addresses. Note that if two accounts save the same phone number, neither can sign in with a code until the duplicate is removed. Developers can adjust the limits with the `hptw_otp_limits` filter; there is deliberately no settings field for them.
+
 = Are SMS messages still sent if I disable the email notification? =
 
 Yes. If you clear the email content via HivePress > Emails, the email is not sent, but the event still fires, so the SMS is sent as long as its message is set. This lets you replace an email notification with an SMS entirely.
@@ -90,6 +112,15 @@ Ideally the international E.164 format (e.g. +447700900123). If you set the defa
 The plugin checks its GitHub repository for new releases and shows available updates on your Plugins screen, so you can update with one click just like a WordPress.org plugin. Updates are downloaded from the official release file, so your plugin folder never changes. The first version you install must be added manually; every version after that can be updated in place.
 
 == Changelog ==
+
+= 1.7.0 =
+* New - SMS can join the Notifications for HivePress extension (version 1.1.0 or later) as a channel on each member's Notification Settings page. Strictly opt-in per member and off by default; no role default ever grants it.
+* New - notifications with no email behind them, such as a completed booking or a new favourite, can now be texted alongside the on-site notification, using the wording from the notification settings.
+* New - member quiet hours are respected on both delivery paths; a text that falls inside them is dropped, not queued. Announcements are never texted, and the administrator phone is unaffected.
+* New - a per-recipient cap (10 texts per hour by default) protects against runaway loops and flooding; adjustable for developers via the hptw_sms_member_limits filter.
+* New - users can sign in with a six-digit code sent by SMS. Off by default; enable it in the Sign-In Codes section of the SMS settings tab.
+* New - sign-in code requests are rate limited per phone number, per visitor and site-wide, and the request form can be protected with reCAPTCHA. Limits are adjustable for developers via the hptw_otp_limits filter.
+* For developers - the hptw_sms_send filter gains two appended arguments (the recipient's user object and email address; existing callbacks keep working), notification texts get their own hptw_channel_sms_text filter, and a small public API (send_message, get_user_phone_number, normalize_phone_number, is_ready, get_phone_attribute) is available for trusted callers.
 
 = 1.6.1 =
 * Fixed the API key secret field stretching across the whole settings screen; it now matches the width of the other credential fields at every screen size.

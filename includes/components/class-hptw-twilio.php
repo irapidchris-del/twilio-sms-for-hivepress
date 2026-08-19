@@ -46,6 +46,38 @@ final class Hptw_Twilio extends Component {
 	const DEFAULT_ATTRIBUTE = 'phone';
 
 	/**
+	 * Trailing digits compared when a number cannot be normalised.
+	 *
+	 * Nine covers the national significant number of every common mobile
+	 * format once the country code and any trunk "0" are dropped
+	 * (+447700900123 and 07700900123 both end 700900123), which is what makes
+	 * the two writings of one real number comparable.
+	 *
+	 * @var int
+	 */
+	const MATCH_DIGITS = 9;
+
+	/**
+	 * Messages queued for sending after the response is flushed.
+	 *
+	 * Each entry is a [ phone, text ] pair, both already normalised.
+	 *
+	 * @var array
+	 */
+	protected $deferred = [];
+
+	/**
+	 * Whether the shutdown dispatch hook is registered.
+	 *
+	 * A flag rather than an emptiness check on the queue: the queue is
+	 * drained by the handler, and an emptiness check would re-register the
+	 * hook if anything queued another send afterwards.
+	 *
+	 * @var bool
+	 */
+	protected $deferred_hooked = false;
+
+	/**
 	 * Class constructor.
 	 *
 	 * @param array $args Component arguments.
@@ -551,8 +583,12 @@ final class Hptw_Twilio extends Component {
 				continue;
 			}
 
-			// Get phone number.
-			$phone = $this->get_phone_number( trim( $address ), $email );
+			$address = trim( $address );
+
+			// Resolve the recipient.
+			$recipient = $this->resolve_recipient( $address, $email );
+
+			$phone = $recipient['phone'];
 
 			if ( ! $phone || in_array( $phone, $numbers, true ) ) {
 				continue;
@@ -568,9 +604,11 @@ final class Hptw_Twilio extends Component {
 			 * @param {string} $phone Phone number.
 			 * @param {string} $text SMS text.
 			 * @param {object} $email Email object.
+			 * @param {WP_User|null} $user Recipient account, or null when the address matches no user.
+			 * @param {string} $address Recipient email address.
 			 * @return {bool} Send flag.
 			 */
-			if ( ! apply_filters( 'hptw_sms_send', true, $phone, $text, $email ) ) {
+			if ( ! apply_filters( 'hptw_sms_send', true, $phone, $text, $email, $recipient['user'], $address ) ) {
 				continue;
 			}
 
@@ -616,13 +654,17 @@ final class Hptw_Twilio extends Component {
 	}
 
 	/**
-	 * Gets the phone number for an email address.
+	 * Resolves an email recipient to a phone number and account.
 	 *
-	 * @param string $address Email address.
+	 * The account is returned alongside the number so the send filter can pass
+	 * both to callbacks: the notification bridge gates member deliveries on the
+	 * recipient's own preferences, which need the user, not just the phone.
+	 *
+	 * @param string $address Email address, already trimmed.
 	 * @param object $email Email object.
-	 * @return string
+	 * @return array Phone number ('' when none) under 'phone', \WP_User or null under 'user'.
 	 */
-	protected function get_phone_number( $address, $email ) {
+	protected function resolve_recipient( $address, $email ) {
 		$phone = '';
 		$user  = null;
 
@@ -661,15 +703,21 @@ final class Hptw_Twilio extends Component {
 		 * @param {object} $email Email object.
 		 * @return {string} Phone number.
 		 */
-		return apply_filters( 'hptw_sms_phone', $normalized, $user, $email );
+		return [
+			'phone' => apply_filters( 'hptw_sms_phone', $normalized, $user, $email ),
+			'user'  => $user,
+		];
 	}
 
 	/**
 	 * Gets the configured phone attribute name.
 	 *
+	 * Public so other components watch and query the same `hp_{attribute}`
+	 * meta key this plugin reads; read-only.
+	 *
 	 * @return string
 	 */
-	protected function get_phone_attribute() {
+	public function get_phone_attribute() {
 		$stored = get_option( hp\prefix( 'twilio_phone_attribute' ), self::DEFAULT_ATTRIBUTE );
 
 		/*
@@ -751,6 +799,180 @@ final class Hptw_Twilio extends Component {
 
 		if ( $phone && is_string( $phone ) ) {
 			update_user_meta( $user_id, hp\prefix( $attribute ), sanitize_text_field( $phone ) );
+		}
+	}
+
+	/**
+	 * Checks whether SMS sending is possible.
+	 *
+	 * True when the Twilio credentials and a sender are configured.
+	 *
+	 * @return bool
+	 */
+	public function is_ready() {
+		return $this->is_configured();
+	}
+
+	/**
+	 * Gets a user's phone number in the E.164 format.
+	 *
+	 * Inherits the three-step attribute read and the E.164 normalisation, so
+	 * the result always matches the number the email mirror would dial.
+	 *
+	 * @param int $user_id User ID.
+	 * @return string Phone number, or '' when none is saved or it is invalid.
+	 */
+	public function get_user_phone_number( $user_id ) {
+		return $this->normalize_phone( $this->get_user_phone( absint( $user_id ) ) );
+	}
+
+	/**
+	 * Normalizes any phone string to the E.164 format.
+	 *
+	 * Public so other components canonicalise typed numbers with the exact
+	 * normaliser used to store them: an independent copy would drift, and for
+	 * a phone-based login a drift breaks sign-in outright.
+	 *
+	 * @param string $phone Phone number, in any format.
+	 * @return string E.164 number, or '' when invalid.
+	 */
+	public function normalize_phone_number( $phone ) {
+		return $this->normalize_phone( $phone );
+	}
+
+	/**
+	 * Gets the loose match key for a phone number that cannot be dialled.
+	 *
+	 * The E.164 form is the only identity this plugin acts on, but it cannot
+	 * always be derived: with no Country Code setting a number saved in the
+	 * national format ("07700900123") normalises to nothing at all, so two
+	 * accounts holding one real number in the two writings look like two
+	 * different numbers. Comparing the trailing MATCH_DIGITS digits makes them
+	 * comparable again. It is a deliberately coarse test, so callers must use
+	 * it only to REFUSE an ambiguous sign-in, never to choose an account: a
+	 * coincidence costs one silent refusal, whereas acting on one would sign
+	 * somebody into a stranger's account.
+	 *
+	 * @param string $phone Phone number, in any format.
+	 * @return string Match key, or '' when the number is too short to compare.
+	 */
+	public function get_match_key( $phone ) {
+		$digits = preg_replace( '/\D/', '', (string) $phone );
+
+		if ( ! is_string( $digits ) || strlen( $digits ) < self::MATCH_DIGITS ) {
+			return '';
+		}
+
+		return substr( $digits, - self::MATCH_DIGITS );
+	}
+
+	/**
+	 * Gets a user's match key, for stored numbers that cannot be dialled.
+	 *
+	 * Deliberately empty whenever the stored number does normalise: those are
+	 * compared exactly, in E.164, and a loose comparison between two valid
+	 * numbers would flag genuinely different ones as the same (+447700900123
+	 * and +17700900123 share their last nine digits).
+	 *
+	 * @param int $user_id User ID.
+	 * @return string Match key, or '' when the number is dialable, absent or too short.
+	 */
+	public function get_user_match_key( $user_id ) {
+		$phone = $this->get_user_phone( absint( $user_id ) );
+
+		if ( $this->normalize_phone( $phone ) ) {
+			return '';
+		}
+
+		return $this->get_match_key( $phone );
+	}
+
+	/**
+	 * Sends a single SMS.
+	 *
+	 * Trusted callers only: the destination must be resolved server-side,
+	 * never taken from request input, and no rate limiting happens here - the
+	 * limits live in the notification bridge and OTP paths, where the sending
+	 * decisions are made. The text is sent verbatim: the hptw_sms_send,
+	 * hptw_sms_text and hptw_sms_phone filters deliberately do NOT run on this
+	 * path - their contracts are email-mirror scoped, and a third-party
+	 * callback could log or veto a sign-in code.
+	 *
+	 * A deferred send ($blocking = false) is queued and dispatched from the
+	 * shutdown action instead of being sent here. WordPress's own
+	 * 'blocking' => false is deliberately NOT used for this: on the cURL
+	 * transport it still runs curl_exec() synchronously, so the Twilio round
+	 * trip would stay inside the response time it was meant to leave. On
+	 * FastCGI hosts the shutdown handler flushes the response first, removing
+	 * the round trip from the visitor's timing entirely; elsewhere it is only
+	 * reduced, and the uniform response copy and the hourly caps remain the
+	 * primary enumeration defences.
+	 *
+	 * @param string $phone Phone number, in any format the normaliser accepts.
+	 * @param string $text SMS text, truncated to 1600 characters.
+	 * @param bool   $blocking Whether to send within this call; false defers the send until shutdown.
+	 * @return bool True on Twilio 201, or on queueing when deferred.
+	 */
+	public function send_message( $phone, $text, $blocking = true ) {
+		if ( ! $this->is_configured() ) {
+			return false;
+		}
+
+		$phone = $this->normalize_phone( $phone );
+		$text  = mb_substr( trim( (string) $text ), 0, 1600 );
+
+		if ( ! $phone || ! $text ) {
+			return false;
+		}
+
+		if ( ! $blocking ) {
+			$this->deferred[] = [ $phone, $text ];
+
+			if ( ! $this->deferred_hooked ) {
+				$this->deferred_hooked = true;
+
+				// Late on shutdown, so flushing the connection in the
+				// handler cannot swallow output another shutdown callback
+				// still wants to print.
+				add_action( 'shutdown', [ $this, 'send_deferred' ], 1000 );
+			}
+
+			return true;
+		}
+
+		return $this->request( $phone, $text );
+	}
+
+	/**
+	 * Dispatches the deferred sends after the response is flushed.
+	 *
+	 * Public only because it is a hook callback; not part of the shared API.
+	 * Where the host supports it, fastcgi_finish_request() closes the
+	 * connection before the first Twilio call, so the visitor cannot time the
+	 * round trip at all; elsewhere shutdown still runs inside the visible
+	 * request and the deferral merely shrinks the signal. Each queued send
+	 * then goes out as a normal blocking request, so the 201 check, the
+	 * recorded failure and its masked logging all apply exactly as for a
+	 * direct send. Attempt-level logging stays with the callers: the OTP path
+	 * logs each attempt itself (masked), while the notification extras path
+	 * logs only cap drops.
+	 */
+	public function send_deferred() {
+		if ( ! $this->deferred ) {
+			return;
+		}
+
+		// Flush the response to the visitor before any Twilio round trip.
+		if ( function_exists( 'fastcgi_finish_request' ) ) {
+			fastcgi_finish_request();
+		}
+
+		$queue = $this->deferred;
+
+		$this->deferred = [];
+
+		foreach ( $queue as $message ) {
+			$this->request( $message[0], $message[1] );
 		}
 	}
 
@@ -915,9 +1137,14 @@ final class Hptw_Twilio extends Component {
 	/**
 	 * Sends a request to the Twilio API.
 	 *
+	 * Always synchronous: deferral happens in send_message(), which queues
+	 * for shutdown rather than passing 'blocking' => false here, because the
+	 * cURL transport runs a "non-blocking" wp_remote_post() synchronously
+	 * anyway and the response check below would be skipped for nothing.
+	 *
 	 * @param string $to Phone number.
 	 * @param string $body SMS text.
-	 * @return bool
+	 * @return bool True on Twilio 201.
 	 */
 	protected function request( $to, $body ) {
 

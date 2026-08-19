@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Twilio for HivePress 1.6.1\n"
+"Project-Id-Version: Twilio for HivePress 1.7.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/twilio-for-hivepress\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-18T00:03:23+00:00\n"
+"POT-Creation-Date: 2026-08-18T23:14:21+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: twilio-for-hivepress\n"
@@ -39,137 +39,228 @@ msgstr ""
 msgid "https://community.hivepress.io/u/chrisb/summary"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:175
+#: includes/components/class-hptw-channel.php:131
+#: includes/configs/settings.php:13
+msgid "SMS"
+msgstr ""
+
+#. translators: %d: user ID.
+#: includes/components/class-hptw-channel.php:363
+#, php-format
+msgid "SMS cap reached for user #%d, message dropped."
+msgstr ""
+
+#: includes/components/class-hptw-channel.php:396
+msgid "SMS goes to the phone number saved in your account settings."
+msgstr ""
+
+#. translators: %s: account settings page URL.
+#: includes/components/class-hptw-channel.php:400
+#, php-format
+msgid "There is no phone number on your account yet, so ticking SMS will do nothing until you add one in your <a href=\"%s\">account settings</a>."
+msgstr ""
+
+#: includes/components/class-hptw-channel.php:432
+msgid "This links SMS with the Notifications for HivePress extension. With the box below ticked, SMS joins On-site, Email and Push as a choice on each member's Notification Settings page. For events enabled under the notification settings, a text only goes to a member who has ticked SMS there. Events you have left disabled there keep today's behaviour and go to anyone with a saved message. Everyone starts unticked, so ticking this box stops texts to members until each person opts in; texts to the administrator phone are not affected. The events above still decide which emails can be texted at all and what each text says, and clearing an event's message still switches that event off for everyone."
+msgstr ""
+
+#: includes/components/class-hptw-channel.php:434
+msgid "This links SMS with the Notifications for HivePress extension. Your copy of that extension is too old for this feature, so the box below has no effect until you update it to version 1.1.0 or later."
+msgstr ""
+
+#: includes/components/class-hptw-channel.php:443
+msgid "Member Preferences"
+msgstr ""
+
+#: includes/components/class-hptw-channel.php:460
+msgid "Member Opt-in"
+msgstr ""
+
+#: includes/components/class-hptw-channel.php:461
+msgid "Let members choose SMS on their Notification Settings page"
+msgstr ""
+
+#: includes/components/class-hptw-channel.php:462
+msgid "For events enabled under the notification settings, texts only go to members who have ticked SMS themselves, and their quiet hours are respected, so a text that falls inside them is simply not sent. A few notifications have no email behind them, such as a completed booking or a new favourite; those are texted using the wording from the notification settings and only alongside the on-site notification. Announcements are never texted. Events you have left disabled under the notification settings keep today's behaviour and go to anyone with a saved message."
+msgstr ""
+
+#: includes/components/class-hptw-channel.php:476
+msgid "SMS has no box here on purpose: each text costs money and goes straight to someone's phone, so members opt in themselves on their Notification Settings page and no role ever starts with it."
+msgstr ""
+
+#: includes/components/class-hptw-otp.php:235
+msgid "Sign In with a Code"
+msgstr ""
+
+#. translators: %s: masked phone number.
+#: includes/components/class-hptw-otp.php:553
+#, php-format
+msgid "Sign-in code refused for %s (duplicate phone number)."
+msgstr ""
+
+#. translators: %s: masked phone number.
+#: includes/components/class-hptw-otp.php:569
+#, php-format
+msgid "Sign-in code not sent for %s (no account holds that number)."
+msgstr ""
+
+#: includes/components/class-hptw-otp.php:652
+#, php-format
+msgid "Sign-in code refused for %s (still inside the resend cooldown)."
+msgstr ""
+
+#: includes/components/class-hptw-otp.php:661
+#, php-format
+msgid "Sign-in code refused for %s (hourly request limit reached)."
+msgstr ""
+
+#. translators: %s: masked phone number.
+#: includes/components/class-hptw-otp.php:723
+#, php-format
+msgid "Sign-in code for %s not sent (site-wide hourly limit reached)."
+msgstr ""
+
+#. translators: 1: site name, 2: six-digit code.
+#: includes/components/class-hptw-otp.php:785
+#, php-format
+msgid "Your %1$s sign-in code is %2$s. It expires in 10 minutes."
+msgstr ""
+
+#. translators: %s: masked phone number.
+#: includes/components/class-hptw-otp.php:802
+#, php-format
+msgid "Sign-in code sent to %s."
+msgstr ""
+
+#: includes/components/class-hptw-twilio.php:207
 #, php-format
 msgid "Hi, %user_name%! Thanks for registering, your account is now active."
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:176
+#: includes/components/class-hptw-twilio.php:208
 #, php-format
 msgid "Hi, %user_name%! Please verify your email address using this link: %email_verify_url%"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:177
+#: includes/components/class-hptw-twilio.php:209
 #, php-format
 msgid "Hi, %user_name%! Use this link to set a new password: %password_reset_url%"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:178
+#: includes/components/class-hptw-twilio.php:210
 msgid "A new listing \"%listing_title%\" has been submitted: %listing_url%"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:179
+#: includes/components/class-hptw-twilio.php:211
 #, php-format
 msgid "Hi, %user_name%! Your listing \"%listing_title%\" has been approved: %listing_url%"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:180
+#: includes/components/class-hptw-twilio.php:212
 #, php-format
 msgid "Hi, %user_name%! Unfortunately, your listing \"%listing_title%\" has been rejected."
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:181
+#: includes/components/class-hptw-twilio.php:213
 #, php-format
 msgid "Hi, %user_name%! Your listing \"%listing_title%\" has expired, renew it here: %listing_url%"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:182
+#: includes/components/class-hptw-twilio.php:214
 msgid "Listing \"%listing_title%\" has been updated: %listing_url%"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:183
+#: includes/components/class-hptw-twilio.php:215
 msgid "Listing \"%listing_title%\" has been reported: %listing_url%"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:184
+#: includes/components/class-hptw-twilio.php:216
 msgid "A new vendor has registered: %vendor_url%"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:222
+#: includes/components/class-hptw-twilio.php:254
 msgid "Claim Submitted"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:223
+#: includes/components/class-hptw-twilio.php:255
 msgid "Order Disputed"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:224
+#: includes/components/class-hptw-twilio.php:256
 msgid "Refund Failed"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:225
+#: includes/components/class-hptw-twilio.php:257
 msgid "Refund Requested"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:226
+#: includes/components/class-hptw-twilio.php:258
 msgid "Payout Failed"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:227
+#: includes/components/class-hptw-twilio.php:259
 msgid "Payout Requested"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:228
+#: includes/components/class-hptw-twilio.php:260
 msgid "Offer Submitted"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:229
+#: includes/components/class-hptw-twilio.php:261
 msgid "Request Submitted"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:292
+#: includes/components/class-hptw-twilio.php:324
 msgid "Site administrator"
 msgstr ""
 
 #. translators: %s: recipient of the message.
-#: includes/components/class-hptw-twilio.php:297
+#: includes/components/class-hptw-twilio.php:329
 #, php-format
 msgid "Sent to: %s."
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:411
+#: includes/components/class-hptw-twilio.php:443
 msgid "SMS sending is currently disabled because the Twilio credentials are missing."
 msgstr ""
 
 #. translators: %s: settings tab URL.
-#: includes/components/class-hptw-twilio.php:413
+#: includes/components/class-hptw-twilio.php:445
 #, php-format
 msgid "Enter them on the %s tab to enable it."
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:414
+#: includes/components/class-hptw-twilio.php:446
 msgid "Integrations"
 msgstr ""
 
 #. translators: %s: date and time.
-#: includes/components/class-hptw-twilio.php:436
+#: includes/components/class-hptw-twilio.php:468
 #, php-format
 msgid "The last SMS attempt failed (%s)."
 msgstr ""
 
 #. translators: %s: error message from Twilio.
-#: includes/components/class-hptw-twilio.php:440
+#: includes/components/class-hptw-twilio.php:472
 #, php-format
 msgid "Twilio said: %s. This notice clears when a message is delivered."
 msgstr ""
 
 #. translators: %s: masked email address.
-#: includes/components/class-hptw-twilio.php:652
+#: includes/components/class-hptw-twilio.php:694
 #, php-format
 msgid "Invalid phone number for %s."
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:714
-#: includes/configs/settings.php:133
+#: includes/components/class-hptw-twilio.php:762
+#: includes/configs/settings.php:149
+#: includes/forms/class-hptw-otp-request.php:67
+#: includes/forms/class-hptw-otp-verify.php:84
 msgid "Phone Number"
 msgstr ""
 
-#: includes/components/class-hptw-twilio.php:986
+#: includes/components/class-hptw-twilio.php:1213
 msgid "Unknown error."
-msgstr ""
-
-#: includes/configs/settings.php:13
-msgid "SMS"
 msgstr ""
 
 #: includes/configs/settings.php:18
@@ -229,72 +320,158 @@ msgid "Log entries may include partially masked recipient details, so make sure 
 msgstr ""
 
 #: includes/configs/settings.php:69
+msgid "Sign-In Codes"
+msgstr ""
+
+#: includes/configs/settings.php:70
+msgid "Let users sign in without a password by texting a six-digit code to the phone number saved on their account. Codes expire after 10 minutes and requests are rate limited to protect you from SMS pumping fraud, but every code still costs one message at your Twilio rate. If your site uses reCAPTCHA or Turnstile, add the SMS code request form to its protected forms so automated abuse is blocked before a text is sent."
+msgstr ""
+
+#: includes/configs/settings.php:75
+msgid "SMS Sign-In"
+msgstr ""
+
+#: includes/configs/settings.php:76
+msgid "Let users sign in with a code sent by SMS"
+msgstr ""
+
+#: includes/configs/settings.php:77
+msgid "Adds a \"Sign in with an SMS code\" link to the sign-in form. The code is sent through the Twilio API to the phone number saved on the matching account, so only users who already added a number can use it. If two accounts share one number, neither can sign in with a code until the duplicate is removed."
+msgstr ""
+
+#: includes/configs/settings.php:85
 msgid "Events"
 msgstr ""
 
-#: includes/configs/settings.php:71
+#: includes/configs/settings.php:87
 #, php-format
 msgid "Set the SMS text sent for each event below. An SMS mirrors the corresponding email notification and supports the same tokens, including model tokens such as %user.first_name%. The full token list for each event is available on the email edit screen. Leave a message blank to disable its SMS."
 msgstr ""
 
-#: includes/configs/settings.php:78
+#: includes/configs/settings.php:94
 msgid "Removing the Plugin"
 msgstr ""
 
-#: includes/configs/settings.php:79
+#: includes/configs/settings.php:95
 msgid "Deleting the plugin keeps your Twilio credentials and SMS messages by default, so you get everything back if you reinstall. WordPress shows a generic warning that deleting a plugin also deletes its data; that warning does not apply here unless you tick the box below."
 msgstr ""
 
-#: includes/configs/settings.php:84
+#: includes/configs/settings.php:100
 msgid "Delete All Data"
 msgstr ""
 
-#: includes/configs/settings.php:85
+#: includes/configs/settings.php:101
 msgid "Delete all data when this plugin is deleted"
 msgstr ""
 
-#: includes/configs/settings.php:86
+#: includes/configs/settings.php:102
 msgid "Tick this before deleting the plugin to remove its stored data: the Twilio credentials, the delivery settings, and every per-event SMS message."
 msgstr ""
 
-#: includes/configs/settings.php:99
+#: includes/configs/settings.php:115
 msgid "Enter your Twilio API credentials to enable SMS delivery. Create an API key on the API keys and tokens page of the Twilio console and enter it with your account SID. Live sending needs an upgraded (paid) Twilio account with an approved Trust Hub compliance profile; trial accounts can only text verified numbers and often reject free-text messages entirely. When a messaging service SID is set it takes precedence over the phone number."
 msgstr ""
 
-#: includes/configs/settings.php:104
+#: includes/configs/settings.php:120
 msgid "Account SID"
 msgstr ""
 
-#: includes/configs/settings.php:105
+#: includes/configs/settings.php:121
 msgid "Enter the account SID from the Twilio console."
 msgstr ""
 
-#: includes/configs/settings.php:112
+#: includes/configs/settings.php:128
 msgid "API Key SID"
 msgstr ""
 
-#: includes/configs/settings.php:113
+#: includes/configs/settings.php:129
 msgid "Enter an API key SID from the Twilio console. Twilio recommends API keys: a leaked key can be revoked on its own, without touching the rest of the account."
 msgstr ""
 
-#: includes/configs/settings.php:120
+#: includes/configs/settings.php:136
 msgid "API Key Secret"
 msgstr ""
 
-#: includes/configs/settings.php:121
+#: includes/configs/settings.php:137
 msgid "Enter the secret shown when the API key was created. Twilio only shows it once."
 msgstr ""
 
-#: includes/configs/settings.php:134
+#: includes/configs/settings.php:150
 msgid "Enter the Twilio phone number used to send messages, in the international format."
 msgstr ""
 
-#: includes/configs/settings.php:142
+#: includes/configs/settings.php:158
 msgid "Messaging Service SID"
 msgstr ""
 
-#: includes/configs/settings.php:143
+#: includes/configs/settings.php:159
 msgid "Enter a messaging service SID to send messages via a messaging service instead of the phone number above."
+msgstr ""
+
+#: includes/controllers/class-hptw-otp.php:75
+#: includes/controllers/class-hptw-otp.php:138
+msgid "Sign-in with a code is not available."
+msgstr ""
+
+#: includes/controllers/class-hptw-otp.php:97
+msgid "Please enter a valid phone number in international format."
+msgstr ""
+
+#: includes/controllers/class-hptw-otp.php:104
+#: includes/controllers/class-hptw-otp.php:155
+msgid "Please wait before requesting another code."
+msgstr ""
+
+#: includes/controllers/class-hptw-otp.php:213
+msgid "Please check your email to activate your account."
+msgstr ""
+
+#: includes/controllers/class-hptw-otp.php:254
+msgid "The code is incorrect or has expired. Please request a new one."
+msgstr ""
+
+#: includes/forms/class-hptw-otp-request.php:34
+msgid "Request Sign-In Code"
+msgstr ""
+
+#: includes/forms/class-hptw-otp-request.php:51
+msgid "Enter the phone number saved on your account and we will text you a sign-in code."
+msgstr ""
+
+#: includes/forms/class-hptw-otp-request.php:55
+msgid "If this number matches an account, we have sent it a code."
+msgstr ""
+
+#: includes/forms/class-hptw-otp-request.php:84
+msgid "Send Code"
+msgstr ""
+
+#: includes/forms/class-hptw-otp-verify.php:50
+msgid "Sign In with Code"
+msgstr ""
+
+#: includes/forms/class-hptw-otp-verify.php:66
+msgid "Enter the six-digit code from the text message. It expires in 10 minutes."
+msgstr ""
+
+#: includes/forms/class-hptw-otp-verify.php:97
+msgid "Sign-In Code"
+msgstr ""
+
+#: includes/forms/class-hptw-otp-verify.php:119
+msgid "Sign In"
+msgstr ""
+
+#: includes/forms/class-hptw-otp-verify.php:124
+msgid "Send a new code"
+msgstr ""
+
+#: templates/hptw-otp/login-link.php:11
+msgid "Sign in with an SMS code"
+msgstr ""
+
+#: templates/hptw-otp/password-link.php:11
+msgid "Sign in with a password instead"
 msgstr ""
 
 #: twilio-for-hivepress.php:113
@@ -305,44 +482,44 @@ msgstr ""
 msgid "Donate"
 msgstr ""
 
-#: twilio-for-hivepress.php:249
+#: twilio-for-hivepress.php:259
 msgid "Show"
 msgstr ""
 
-#: twilio-for-hivepress.php:250
+#: twilio-for-hivepress.php:260
 msgid "Hide"
 msgstr ""
 
-#: twilio-for-hivepress.php:568
+#: twilio-for-hivepress.php:578
 msgid "See the GitHub releases page for the changelog."
 msgstr ""
 
-#: twilio-for-hivepress.php:591
+#: twilio-for-hivepress.php:601
 msgid "Settings"
 msgstr ""
 
-#: twilio-for-hivepress.php:607
+#: twilio-for-hivepress.php:617
 msgid "Check for updates"
 msgstr ""
 
 #. translators: %s: new version number.
-#: twilio-for-hivepress.php:673
+#: twilio-for-hivepress.php:683
 #, php-format
 msgid "A new version of Twilio for HivePress (%s) is available."
 msgstr ""
 
-#: twilio-for-hivepress.php:676
+#: twilio-for-hivepress.php:686
 msgid "Twilio for HivePress is up to date."
 msgstr ""
 
-#: twilio-for-hivepress.php:679
+#: twilio-for-hivepress.php:689
 msgid "No releases have been published on GitHub yet, so there is nothing to update to."
 msgstr ""
 
-#: twilio-for-hivepress.php:682
+#: twilio-for-hivepress.php:692
 msgid "Could not reach GitHub to check for updates. Please try again later."
 msgstr ""
 
-#: twilio-for-hivepress.php:727
+#: twilio-for-hivepress.php:737
 msgid "Could not rename the update directory."
 msgstr ""

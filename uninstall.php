@@ -45,9 +45,10 @@ delete_site_transient( 'hptw_github_release' );
 // The last-delivery-failure notice is regenerable runtime state, not owner data.
 delete_option( 'hp_twilio_last_error' );
 
-// Any other transient the plugin has ever set. Nothing writes one today, but a transient is stored
-// as "_transient_{name}" plus a separate "_transient_timeout_{name}" row, so the prefix sweep used
-// for options further down cannot match them.
+// Every transient the plugin sets: the per-member SMS cap counters (hptw_sms_cap_{user_id}) are
+// regenerable rate-limit state, not owner data, so they go whichever way the setting points. A
+// transient is stored as "_transient_{name}" plus a separate "_transient_timeout_{name}" row, so
+// the prefix sweep used for options further down cannot match them.
 // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- One-off cleanup while the plugin is deleted.
 $hptw_transients = $wpdb->get_col(
 	$wpdb->prepare(
@@ -61,6 +62,20 @@ foreach ( (array) $hptw_transients as $hptw_transient_name ) {
 	delete_option( $hptw_transient_name );
 }
 
+// The SMS sign-in state is regenerable runtime data, not owner data, so it goes whichever way the
+// setting points: pending sign-in codes and their attempt counters are security state that must
+// not outlive the plugin, the two shadow indexes (E.164 numbers, and the trailing digits of the
+// ones that cannot be normalised) are derived from the phone attribute and rebuild themselves on
+// reinstall, and the backfill cursor merely restarts that rebuild. The phone numbers
+// themselves live in the attribute meta (hp_{attribute}), which belongs to HivePress user
+// attributes, not to this plugin, and are not touched. The rate buckets and cooldowns are
+// transients under the hptw_ prefix, already swept above.
+delete_metadata( 'user', 0, 'hp_twilio_otp', '', true );
+delete_metadata( 'user', 0, 'hp_twilio_otp_attempts', '', true );
+delete_metadata( 'user', 0, 'hp_twilio_phone_e164', '', true );
+delete_metadata( 'user', 0, 'hp_twilio_phone_digits', '', true );
+delete_option( 'hp_twilio_otp_backfill' );
+
 /*
  * ---------------------------------------------------------------------------------------------
  * Everything below happens only when the owner asked for it.
@@ -69,9 +84,11 @@ foreach ( (array) $hptw_transients as $hptw_transient_name ) {
 
 if ( $hptw_delete_all ) {
 	/*
-	 * Delete the options: the Twilio credentials, the delivery settings and the per-event SMS
-	 * messages. The names are matched on the plugin's prefix because most are dynamic - one text
-	 * option per notification event, including events registered by other extensions.
+	 * Delete the options: the Twilio credentials, the delivery settings, the per-event SMS
+	 * messages, the Member Opt-in toggle and the SMS Sign-In toggle. The names are matched on the
+	 * plugin's prefix because
+	 * most are dynamic - one text option per notification event, including events registered by
+	 * other extensions.
 	 *
 	 * The "delete all data" option itself is excluded here and removed at the very end. If this
 	 * run fails part-way through, the flag is still set, so a second attempt finishes the job.
