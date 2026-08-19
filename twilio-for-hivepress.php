@@ -3,7 +3,7 @@
  * Plugin Name: Twilio for HivePress
  * Plugin URI: https://github.com/irapidchris-del/twilio-sms-for-hivepress
  * Description: Send SMS notifications for HivePress events via Twilio.
- * Version: 1.7.0
+ * Version: 1.7.1
  * Author: ChrisB @ HivePress Community
  * Author URI: https://community.hivepress.io/u/chrisb/summary
  * Text Domain: twilio-for-hivepress
@@ -23,7 +23,7 @@ namespace TwilioForHivePress;
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
-const VERSION = '1.7.0';
+const VERSION = '1.7.1';
 
 /**
  * Registers the extension with HivePress.
@@ -338,6 +338,18 @@ const UPDATE_SLUG = 'twilio-for-hivepress';
 const UPDATE_CACHE_KEY = 'hptw_github_release';
 
 /**
+ * Why the last release check came back empty, so the notice can say which.
+ */
+const UPDATE_REASON_KEY = 'hptw_github_release_reason';
+
+/**
+ * When GitHub's hourly allowance for this server is expected back. While this is set the
+ * API is not called at all, so a site that has run out does not spend the rest of the
+ * window making requests that can only fail.
+ */
+const UPDATE_RATE_LIMIT_KEY = 'hptw_github_release_rate_limit';
+
+/**
  * Gets the installed plugin version.
  *
  * @return string
@@ -358,17 +370,30 @@ function get_version() {
  * Gets the latest GitHub release details, cached for 6 hours.
  *
  * @param bool   $force Bypass the cache.
- * @param string $state Set to 'ok', 'none' (no releases published) or 'error'.
+ * @param string $state Set to 'ok', 'none' (no releases published), 'limited' (GitHub's hourly
+ *                      allowance for this server is spent) or 'error'.
  * @return array<string, string>|null
  */
 function get_latest_release( $force = false, &$state = '' ) {
-	$release = $force ? false : get_site_transient( UPDATE_CACHE_KEY );
+	$cached  = get_site_transient( UPDATE_CACHE_KEY );
+	$release = $force ? false : $cached;
 
-	if ( false === $release || ( ! is_array( $release ) && ! in_array( $release, [ 'none', 'error' ], true ) ) ) {
+	if ( false === $release || ( ! is_array( $release ) && ! in_array( $release, [ 'none', 'error', 'limited' ], true ) ) ) {
 		$release = fetch_latest_release();
 
-		// Non-success states are cached briefly so the API is not queried
-		// repeatedly - unauthenticated GitHub allows 60 requests per hour.
+		// A failed check must not erase what the last good one found. Overwriting a usable answer
+		// with a failure state took a genuinely pending update off the Plugins screen for an hour
+		// with nothing to say why.
+		if ( ! is_array( $release ) && is_array( $cached ) && $cached ) {
+			set_site_transient( UPDATE_CACHE_KEY, $cached, HOUR_IN_SECONDS );
+
+			$state = 'ok';
+
+			return $cached;
+		}
+
+		// Non-success states are cached briefly so the lookup is not repeated
+		// on every admin page load.
 		set_site_transient( UPDATE_CACHE_KEY, $release, is_array( $release ) ? 6 * HOUR_IN_SECONDS : HOUR_IN_SECONDS );
 	}
 
@@ -378,7 +403,7 @@ function get_latest_release( $force = false, &$state = '' ) {
 		return $release;
 	}
 
-	$state = 'none' === $release ? 'none' : 'error';
+	$state = in_array( $release, [ 'none', 'limited' ], true ) ? $release : 'error';
 
 	return null;
 }
@@ -396,37 +421,18 @@ function get_latest_release( $force = false, &$state = '' ) {
  * @return array<string, string>|string Release details, 'none' or 'error'.
  */
 function fetch_latest_release() {
-	$response = wp_remote_get(
-		'https://api.github.com/repos/' . UPDATE_REPO . '/releases/latest',
-		[
-			'timeout'    => 10,
-			'headers'    => [ 'Accept' => 'application/vnd.github+json' ],
-
-			// Without an explicit user agent WordPress sends its version and
-			// the site URL with every request; GitHub only needs something
-			// identifying.
-			'user-agent' => UPDATE_SLUG . '/' . VERSION,
-		]
-	);
-
-	if ( is_wp_error( $response ) ) {
-		return 'error';
-	}
-
-	$code = wp_remote_retrieve_response_code( $response );
-
-	if ( 404 === $code ) {
-		return 'none';
-	}
-
-	if ( 200 !== $code ) {
-		return 'error';
-	}
-
-	$data = json_decode( wp_remote_retrieve_body( $response ), true );
+	$data = fetch_release_data();
 
 	if ( ! is_array( $data ) ) {
-		return 'error';
+
+		// Translate the lookup's reason into this plugin's own sentinels.
+		$reason = get_site_transient( UPDATE_REASON_KEY );
+
+		if ( 'no_release' === $reason ) {
+			return 'none';
+		}
+
+		return 'rate_limited' === $reason ? 'limited' : 'error';
 	}
 
 	// The version is read from the release tag, with or without a "v" prefix.
@@ -460,6 +466,329 @@ function fetch_latest_release() {
 		'notes'     => (string) ( isset( $data['body'] ) ? $data['body'] : '' ),
 		'published' => (string) ( isset( $data['published_at'] ) ? $data['published_at'] : '' ),
 	];
+}
+
+/**
+ * Gets the latest release, from github.com in preference to the GitHub API.
+ *
+ * WHY THIS DOES NOT SIMPLY CALL THE API
+ *
+ * Without a token `api.github.com` allows **60 requests an hour per IP address**, and that
+ * allowance is shared by every plugin on the site, by every other site on the same server, and by
+ * anything else calling the API from that address. A site running several of these extensions,
+ * plus a few clicks of "Check for updates" - which deliberately bypasses the cache - spends it
+ * easily; on shared hosting a neighbouring site can spend it alone. GitHub then answers 403, and
+ * reporting that as "could not reach GitHub" sends the owner hunting a network fault that does not
+ * exist. That is the same family of bug as reporting a 404 as unreachable: a refusal is an answer,
+ * not a failure to get one.
+ *
+ * Everything this lookup needs is also published on github.com itself, which carries no such
+ * allowance:
+ *
+ *   - `/releases/latest` answers 302, and the Location header names the release GitHub considers
+ *     latest, with drafts and pre-releases excluded exactly as the API excludes them;
+ *   - `/releases/expanded_assets/{tag}` is the fragment the release page uses to list its own
+ *     downloads, so it names the asset;
+ *   - `/releases.atom` carries the release notes.
+ *
+ * Measured against GitHub's own rate-limit counter on 2026-08-19, thirteen full update checks
+ * through this route moved it by zero. The API is kept as a fallback so that a change at github.com
+ * cannot leave the plugin with no way to check at all.
+ *
+ * @return array<string, mixed>|null Release data in the API's own shape, or null.
+ */
+function fetch_release_data() {
+	$site = fetch_release_from_site();
+
+	if ( isset( $site['release'] ) ) {
+		delete_site_transient( UPDATE_REASON_KEY );
+
+		return $site['release'];
+	}
+
+	// github.com has given a definite answer that nothing is published. Asking the API would only
+	// repeat it, at the cost of one of the sixty.
+	if ( isset( $site['reason'] ) && 'no_release' === $site['reason'] ) {
+		set_site_transient( UPDATE_REASON_KEY, 'no_release', HOUR_IN_SECONDS );
+
+		return null;
+	}
+
+	return fetch_release_from_api();
+}
+
+/**
+ * Reads the latest release from github.com, without touching the API allowance.
+ *
+ * @return array<string, mixed> Either a `release` in the API's shape, a `reason`, or empty to fall
+ *                              back to the API.
+ */
+function fetch_release_from_site() {
+	$base = 'https://github.com/' . UPDATE_REPO;
+
+	$response = request(
+		$base . '/releases/latest',
+		[
+			// Do not follow it. The redirect target is the answer.
+			'redirection' => 0,
+		]
+	);
+
+	if ( ! $response ) {
+		return [];
+	}
+
+	$code = (int) wp_remote_retrieve_response_code( $response );
+
+	// A repository with nothing published answers 404 here, which is the normal state of a new
+	// repository rather than a fault.
+	if ( 404 === $code ) {
+		return [ 'reason' => 'no_release' ];
+	}
+
+	if ( 301 !== $code && 302 !== $code ) {
+		return [];
+	}
+
+	$location = wp_remote_retrieve_header( $response, 'location' );
+
+	// WordPress hands back an array when a header repeats.
+	if ( is_array( $location ) ) {
+		$location = end( $location );
+	}
+
+	if ( ! preg_match( '#/releases/tag/(.+)$#', (string) $location, $matches ) ) {
+		return [];
+	}
+
+	$tag = rawurldecode( trim( $matches[1] ) );
+
+	$asset = fetch_release_asset( $base, $tag );
+
+	// No downloadable asset means there is nothing the updater could install, so let the API have
+	// its say rather than reporting a release that cannot be applied.
+	if ( ! $asset ) {
+		return [];
+	}
+
+	$notes = fetch_release_notes( $base, $tag );
+
+	// Shaped exactly like the API's own answer, so everything downstream is identical either way.
+	return [
+		'release' => [
+			'tag_name'     => $tag,
+			'html_url'     => $base . '/releases/tag/' . rawurlencode( $tag ),
+			'body'         => $notes['body'],
+			'published_at' => $notes['published'],
+			'assets'       => [
+				[
+					'name'                 => $asset['name'],
+					'browser_download_url' => $asset['url'],
+				],
+			],
+		],
+	];
+}
+
+/**
+ * Reads a release's asset from the fragment the release page uses to list its own downloads.
+ *
+ * @param string $base Repository URL.
+ * @param string $tag Release tag.
+ * @return array<string, string>|null
+ */
+function fetch_release_asset( $base, $tag ) {
+	$response = request( $base . '/releases/expanded_assets/' . rawurlencode( $tag ) );
+
+	if ( ! $response || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
+		return null;
+	}
+
+	if ( ! preg_match_all( '#href="(/[^"]*/releases/download/[^"]+\.zip)"#i', wp_remote_retrieve_body( $response ), $matches ) ) {
+		return null;
+	}
+
+	// Take the first zip, matching what the API branch does with the assets list.
+	$path = html_entity_decode( $matches[1][0], ENT_QUOTES, 'UTF-8' );
+
+	return [
+		'name' => rawurldecode( basename( $path ) ),
+		'url'  => 'https://github.com' . $path,
+	];
+}
+
+/**
+ * Reads a release's notes and publication date from the releases feed.
+ *
+ * Only the changelog in the plugin details popup depends on this, so a failure here is not fatal.
+ *
+ * @param string $base Repository URL.
+ * @param string $tag Release tag.
+ * @return array<string, string>
+ */
+function fetch_release_notes( $base, $tag ) {
+	$empty = [
+		'body'      => '',
+		'published' => '',
+	];
+
+	$response = request( $base . '/releases.atom' );
+
+	if ( ! $response || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
+		return $empty;
+	}
+
+	if ( ! preg_match_all( '#<entry>(.*?)</entry>#s', wp_remote_retrieve_body( $response ), $entries ) ) {
+		return $empty;
+	}
+
+	foreach ( $entries[1] as $entry ) {
+
+		// Match the tag rather than taking the newest entry: the feed also carries pre-releases,
+		// which the latest-release redirect deliberately skips.
+		if ( false === strpos( $entry, '/releases/tag/' . $tag ) ) {
+			continue;
+		}
+
+		$notes = '';
+
+		if ( preg_match( '#<content[^>]*>(.*?)</content>#s', $entry, $content ) ) {
+			$notes = release_notes_to_text( $content[1] );
+		}
+
+		$published = '';
+
+		if ( preg_match( '#<updated>(.*?)</updated>#s', $entry, $updated ) ) {
+			$published = trim( $updated[1] );
+		}
+
+		return [
+			'body'      => $notes,
+			'published' => $published,
+		];
+	}
+
+	return $empty;
+}
+
+/**
+ * Turns the rendered notes in the feed back into the plain text the API would have returned.
+ *
+ * The API hands back the release body as it was written, in Markdown, and the details popup prints
+ * that as text. The feed carries the rendered HTML instead, so headings, bold runs and list items
+ * are put back into their Markdown spelling to keep the popup reading the same either way.
+ *
+ * @param string $html Rendered notes.
+ * @return string
+ */
+function release_notes_to_text( $html ) {
+	$text = html_entity_decode( $html, ENT_QUOTES, 'UTF-8' );
+
+	$text = preg_replace( '#<h[1-6][^>]*>(.*?)</h[1-6]>#is', "\n**$1**\n", $text );
+	$text = preg_replace( '#<(strong|b)[^>]*>(.*?)</\1>#is', '**$2**', $text );
+	$text = preg_replace( '#<(em|i)[^>]*>(.*?)</\1>#is', '*$2*', $text );
+	$text = preg_replace( '#<li[^>]*>#i', "\n- ", $text );
+	$text = preg_replace( '#</(p|div|ul|ol|li|pre|blockquote)>#i', "\n", $text );
+	$text = preg_replace( '#<br\s*/?>#i', "\n", $text );
+
+	$text = wp_strip_all_tags( (string) $text );
+
+	// Collapse the blank lines the substitutions leave behind.
+	$text = preg_replace( '#\n{3,}#', "\n\n", (string) $text );
+
+	return trim( (string) $text );
+}
+
+/**
+ * Reads the latest release from the GitHub API.
+ *
+ * Kept as a fallback only. See `fetch_release_data()` for why it is not the first choice.
+ *
+ * @return array<string, mixed>|null
+ */
+function fetch_release_from_api() {
+
+	// GitHub has already said the allowance is spent, so sit the window out rather than spending it
+	// on requests that can only be refused.
+	if ( get_site_transient( UPDATE_RATE_LIMIT_KEY ) ) {
+		set_site_transient( UPDATE_REASON_KEY, 'rate_limited', HOUR_IN_SECONDS );
+
+		return null;
+	}
+
+	$response = wp_remote_get(
+		'https://api.github.com/repos/' . UPDATE_REPO . '/releases/latest',
+		[
+			'timeout'    => 10,
+			'headers'    => [ 'Accept' => 'application/vnd.github+json' ],
+
+			// Our own User-Agent, because WordPress's default is "WordPress/{version}; {site url}"
+			// (wp-includes/class-wp-http.php:211) and that puts the site's address and its exact
+			// WordPress version into every release check. GitHub only requires that the header
+			// identifies something, so this satisfies it while telling them nothing about the site.
+			'user-agent' => UPDATE_SLUG . '/' . VERSION,
+		]
+	);
+
+	if ( is_wp_error( $response ) ) {
+		set_site_transient( UPDATE_REASON_KEY, 'unreachable', HOUR_IN_SECONDS );
+
+		return null;
+	}
+
+	$code = (int) wp_remote_retrieve_response_code( $response );
+
+	if ( 200 !== $code ) {
+		$reason = 404 === $code ? 'no_release' : 'unreachable';
+
+		// A 403 or 429 with nothing left on the counter means this server's hourly allowance is
+		// spent. Nothing is wrong with the site, the plugin or the repository, so it must not be
+		// reported as though something were.
+		if ( ( 403 === $code || 429 === $code ) && '0' === (string) wp_remote_retrieve_header( $response, 'x-ratelimit-remaining' ) ) {
+			$reason = 'rate_limited';
+			$reset  = (int) wp_remote_retrieve_header( $response, 'x-ratelimit-reset' );
+			$wait   = $reset > time() ? min( $reset - time(), HOUR_IN_SECONDS ) : 5 * MINUTE_IN_SECONDS;
+
+			set_site_transient( UPDATE_RATE_LIMIT_KEY, $reset ? $reset : time() + $wait, $wait );
+		}
+
+		set_site_transient( UPDATE_REASON_KEY, $reason, HOUR_IN_SECONDS );
+
+		return null;
+	}
+
+	delete_site_transient( UPDATE_RATE_LIMIT_KEY );
+	delete_site_transient( UPDATE_REASON_KEY );
+
+	$data = json_decode( wp_remote_retrieve_body( $response ), true );
+
+	return is_array( $data ) ? $data : null;
+}
+
+/**
+ * Makes a request to github.com.
+ *
+ * The User-Agent is set for the same reason as in the API branch: WordPress's default would put the
+ * site's address and its exact WordPress version into every check.
+ *
+ * @param string               $url Request URL.
+ * @param array<string, mixed> $args Extra request arguments.
+ * @return array<string, mixed>|null
+ */
+function request( $url, $args = [] ) {
+	$response = wp_remote_get(
+		$url,
+		array_merge(
+			[
+				'timeout'    => 10,
+				'headers'    => [ 'Accept' => 'text/html, application/xml;q=0.9, */*;q=0.8' ],
+				'user-agent' => UPDATE_SLUG . '/' . VERSION,
+			],
+			$args
+		)
+	);
+
+	return is_wp_error( $response ) ? null : $response;
 }
 
 /**
@@ -648,9 +977,16 @@ function handle_update_check() {
 
 	if ( ! $release ) {
 
-		// A 404 means no release has been published yet - an answer, not a
-		// connectivity failure, so it gets its own message.
-		$status = 'none' === $state ? 'unreleased' : 'error';
+		// A 404 means no release has been published yet, and a spent hourly
+		// allowance means GitHub refused rather than failed - both are answers,
+		// not connectivity failures, so each gets its own message.
+		if ( 'none' === $state ) {
+			$status = 'unreleased';
+		} elseif ( 'limited' === $state ) {
+			$status = 'limited';
+		} else {
+			$status = 'error';
+		}
 	} elseif ( version_compare( $release['version'], get_version(), '>' ) ) {
 		$status = 'available';
 	}
@@ -688,6 +1024,9 @@ function show_update_check_notice() {
 	} elseif ( 'unreleased' === $status ) {
 		$message = __( 'No releases have been published on GitHub yet, so there is nothing to update to.', 'twilio-for-hivepress' );
 		$class   = 'notice-info';
+	} elseif ( 'limited' === $status ) {
+		$message = __( 'GitHub limits how many update checks one server may make each hour, and this server has reached that limit. Nothing is wrong with the plugin or your site, and checking will work again within the hour.', 'twilio-for-hivepress' );
+		$class   = 'notice-warning';
 	} elseif ( 'error' === $status ) {
 		$message = __( 'Could not reach GitHub to check for updates. Please try again later.', 'twilio-for-hivepress' );
 		$class   = 'notice-error';

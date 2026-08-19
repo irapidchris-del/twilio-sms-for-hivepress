@@ -523,3 +523,7 @@ msgstr ""
 #: twilio-for-hivepress.php:737
 msgid "Could not rename the update directory."
 msgstr ""
+
+#: twilio-for-hivepress.php:1028
+msgid "GitHub limits how many update checks one server may make each hour, and this server has reached that limit. Nothing is wrong with the plugin or your site, and checking will work again within the hour."
+msgstr ""
