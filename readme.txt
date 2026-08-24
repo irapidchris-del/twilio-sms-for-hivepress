@@ -4,7 +4,7 @@ Tags: hivepress, twilio, sms, notifications
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.7.2
+Stable tag: 1.7.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -112,6 +112,19 @@ Ideally the international E.164 format (e.g. +447700900123). If you set the defa
 The plugin checks its GitHub repository for new releases and shows available updates on your Plugins screen, so you can update with one click just like a WordPress.org plugin. Updates are downloaded from the official release file, so your plugin folder never changes. The first version you install must be added manually; every version after that can be updated in place.
 
 == Changelog ==
+
+= 1.7.3 =
+* Fixed - sign in by SMS can no longer send a code that signs somebody into the wrong account.
+  When two accounts held the same phone number, sign in was supposed to refuse the code; if one of
+  those accounts stored its number in a different place, which happens with imported accounts and
+  with some other plugins, that account was invisible to the check, so the refusal never happened.
+  Every place a number can be stored is now searched.
+* Fixed - SMS is now offered for the notification types added by other extensions. Gallery access
+  purchased, holiday started, a moderation hold and the rest could never send a text and offered
+  no SMS tick box to explain why, while bookings and messages worked normally. Everyone still
+  starts opted out, so nobody receives a text they have not asked for.
+* Fixed - deleting the plugin now also clears the update check's own leftovers and cancels its
+  background update check.
 
 = 1.7.2 =
 * Fixed - "View details" is back on the Plugins screen. WordPress only offers that link for a

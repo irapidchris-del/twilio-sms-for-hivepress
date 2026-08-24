@@ -330,16 +330,28 @@ final class Hptw_Otp extends Component {
 
 		global $wpdb;
 
+		$attribute = hivepress()->hptw_twilio->get_phone_attribute();
+
 		/*
 		 * Keyset pagination on the indexed user_id column with a DISTINCT
 		 * collapse, which WP_User_Query cannot express; the batch is bounded
 		 * and each run touches at most BATCH_SIZE users.
+		 *
+		 * Both writings of the key, because Twilio\get_user_phone() reads the
+		 * unprefixed row too. Enumerating only the prefixed one left an
+		 * imported account - number in "phone", no "hp_phone" row at all -
+		 * with no shadow row and no way into the sweep in
+		 * get_user_id_by_phone(), so a second account holding the same number
+		 * was never counted as a holder and the duplicate refusal never
+		 * fired: a code went to the handset and signed its holder into the
+		 * OTHER account. Discovery must read every place delivery reads.
 		 */
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Bounded keyset batch unavailable through WP_User_Query; results are consumed once.
 		$user_ids = $wpdb->get_col(
 			$wpdb->prepare(
-				"SELECT DISTINCT user_id FROM {$wpdb->usermeta} WHERE meta_key = %s AND user_id > %d ORDER BY user_id ASC LIMIT %d",
-				hp\prefix( hivepress()->hptw_twilio->get_phone_attribute() ),
+				"SELECT DISTINCT user_id FROM {$wpdb->usermeta} WHERE meta_key IN ( %s, %s ) AND user_id > %d ORDER BY user_id ASC LIMIT %d",
+				hp\prefix( $attribute ),
+				$attribute,
 				$last_id,
 				self::BATCH_SIZE
 			)
@@ -484,16 +496,37 @@ final class Hptw_Otp extends Component {
 		 * answered is exactly how a second holder of one number stays unseen:
 		 * an account the hourly backfill has not reached has no shadow row at
 		 * all, and one saved in the national format on a site with no Country
-		 * Code setting has no E.164 row it could ever have. Both clauses
-		 * compare literals against an indexed meta key and the result is
+		 * Code setting has no E.164 row it could ever have. Every clause
+		 * compares literals against an indexed meta key and the result is
 		 * bounded, as the index query is.
+		 *
+		 * The attribute is swept in both writings because
+		 * Twilio\get_user_phone() reads both: the HivePress field (prefixed
+		 * meta), then the prefixed row, then the UNPREFIXED row. An account
+		 * holding its number only in the unprefixed row - an import, or
+		 * another plugin writing "phone" - was invisible to all three
+		 * discovery queries while remaining perfectly textable, so a second
+		 * account holding the same number was never counted as a holder, the
+		 * duplicate refusal never fired, and the code signed whoever held the
+		 * handset into the wrong account. Any new place delivery learns to
+		 * read has to be added here in the same commit.
 		 */
+		$variants = $this->get_phone_variants( $e164, $raw );
+
+		$attribute = $twilio->get_phone_attribute();
+
 		$clauses = [
 			'relation' => 'OR',
 
 			[
-				'key'     => hp\prefix( $twilio->get_phone_attribute() ),
-				'value'   => $this->get_phone_variants( $e164, $raw ),
+				'key'     => hp\prefix( $attribute ),
+				'value'   => $variants,
+				'compare' => 'IN',
+			],
+
+			[
+				'key'     => $attribute,
+				'value'   => $variants,
 				'compare' => 'IN',
 			],
 		];

@@ -67,7 +67,17 @@ final class Hptw_Channel extends Component {
 		 * re-checks availability at call time via is_active() instead.
 		 */
 		add_filter( 'hivepress/v1/notification_channels', [ $this, 'add_channel' ] );
-		add_filter( 'hivepress/v1/notification_types', [ $this, 'add_type_channel' ] );
+		/*
+		 * Priority 1000, not the default 10. Notifications for HivePress registers its
+		 * extension-contributed types at 20 and its insight types at 30, inside this same
+		 * apply_filters() call, so at 10 this callback iterated a list those types were not in yet
+		 * and they kept ['onsite','push'] for ever. A member who had ticked SMS got texts for
+		 * bookings, messages and favourites but never for gallery access purchased, holiday
+		 * started or a moderation hold, and their Notification Settings page offered no SMS tick
+		 * on those rows to explain it. Run after every registrar, and after anything a future
+		 * extension adds.
+		 */
+		add_filter( 'hivepress/v1/notification_types', [ $this, 'add_type_channel' ], 1000 );
 		add_filter( 'hivepress/v1/notification_optin_channels', [ $this, 'add_optin_channel' ] );
 
 		// Delivery.
