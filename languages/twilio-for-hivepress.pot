@@ -2,89 +2,69 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Twilio for HivePress 1.7.0\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/twilio-for-hivepress\n"
+"Project-Id-Version: Twilio for HivePress 1.8.1\n"
+"Report-Msgid-Bugs-To: https://github.com/irapidchris-del/twilio-sms-for-hivepress/issues\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-18T23:14:21+00:00\n"
+"POT-Creation-Date: 2026-08-30T17:14:42+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: twilio-for-hivepress\n"
-
-#. Plugin Name of the plugin
-#: twilio-for-hivepress.php
-msgid "Twilio for HivePress"
-msgstr ""
-
-#. Plugin URI of the plugin
-#: twilio-for-hivepress.php
-msgid "https://github.com/irapidchris-del/twilio-sms-for-hivepress"
-msgstr ""
 
 #. Description of the plugin
 #: twilio-for-hivepress.php
 msgid "Send SMS notifications for HivePress events via Twilio."
 msgstr ""
 
-#. Author of the plugin
-#: twilio-for-hivepress.php
-msgid "ChrisB @ HivePress Community"
-msgstr ""
-
-#. Author URI of the plugin
-#: twilio-for-hivepress.php
-msgid "https://community.hivepress.io/u/chrisb/summary"
-msgstr ""
-
-#: includes/components/class-hptw-channel.php:131
+#: includes/components/class-hptw-channel.php:141
 #: includes/configs/settings.php:13
 msgid "SMS"
 msgstr ""
 
 #. translators: %d: user ID.
-#: includes/components/class-hptw-channel.php:363
+#: includes/components/class-hptw-channel.php:373
 #, php-format
 msgid "SMS cap reached for user #%d, message dropped."
 msgstr ""
 
-#: includes/components/class-hptw-channel.php:396
+#: includes/components/class-hptw-channel.php:406
 msgid "SMS goes to the phone number saved in your account settings."
 msgstr ""
 
 #. translators: %s: account settings page URL.
-#: includes/components/class-hptw-channel.php:400
+#: includes/components/class-hptw-channel.php:410
 #, php-format
 msgid "There is no phone number on your account yet, so ticking SMS will do nothing until you add one in your <a href=\"%s\">account settings</a>."
 msgstr ""
 
-#: includes/components/class-hptw-channel.php:432
-msgid "This links SMS with the Notifications for HivePress extension. With the box below ticked, SMS joins On-site, Email and Push as a choice on each member's Notification Settings page. For events enabled under the notification settings, a text only goes to a member who has ticked SMS there. Events you have left disabled there keep today's behaviour and go to anyone with a saved message. Everyone starts unticked, so ticking this box stops texts to members until each person opts in; texts to the administrator phone are not affected. The events above still decide which emails can be texted at all and what each text says, and clearing an event's message still switches that event off for everyone."
-msgstr ""
-
-#: includes/components/class-hptw-channel.php:434
-msgid "This links SMS with the Notifications for HivePress extension. Your copy of that extension is too old for this feature, so the box below has no effect until you update it to version 1.1.0 or later."
+#: includes/components/class-hptw-channel.php:441
+msgid "This links SMS with the Notifications for HivePress extension: with the box below ticked, SMS joins On-site, Email and Push as a choice on each member's Notification Settings page. For events enabled under the notification settings, a text then only goes to a member who has ticked SMS there; events left disabled there keep today's behaviour and go to anyone with a saved message. Everyone starts unticked, so ticking this box stops texts to members until each person opts in; texts to the administrator phone are not affected."
 msgstr ""
 
 #: includes/components/class-hptw-channel.php:443
+msgid "This links SMS with the Notifications for HivePress extension. Your copy of that extension is too old for this feature, so the box below has no effect until you update it to version 1.1.0 or later."
+msgstr ""
+
+#: includes/components/class-hptw-channel.php:452
 msgid "Member Preferences"
 msgstr ""
 
-#: includes/components/class-hptw-channel.php:460
+#: includes/components/class-hptw-channel.php:469
 msgid "Member Opt-in"
 msgstr ""
 
-#: includes/components/class-hptw-channel.php:461
+#: includes/components/class-hptw-channel.php:470
 msgid "Let members choose SMS on their Notification Settings page"
 msgstr ""
 
-#: includes/components/class-hptw-channel.php:462
-msgid "For events enabled under the notification settings, texts only go to members who have ticked SMS themselves, and their quiet hours are respected, so a text that falls inside them is simply not sent. A few notifications have no email behind them, such as a completed booking or a new favourite; those are texted using the wording from the notification settings and only alongside the on-site notification. Announcements are never texted. Events you have left disabled under the notification settings keep today's behaviour and go to anyone with a saved message."
+#: includes/components/class-hptw-channel.php:471
+msgid "Texts only go to members who have ticked SMS themselves, and their quiet hours are respected, so a text that falls inside them is simply not sent. Notifications with no email behind them, such as a completed booking or a new favourite, are texted with the wording from the notification settings; announcements are never texted. Events left disabled under the notification settings keep today's behaviour and go to anyone with a saved message."
 msgstr ""
 
-#: includes/components/class-hptw-channel.php:476
+#: includes/components/class-hptw-channel.php:485
 msgid "SMS has no box here on purpose: each text costs money and goes straight to someone's phone, so members opt in themselves on their Notification Settings page and no role ever starts with it."
 msgstr ""
 
@@ -93,41 +73,43 @@ msgid "Sign In with a Code"
 msgstr ""
 
 #. translators: %s: masked phone number.
-#: includes/components/class-hptw-otp.php:553
+#: includes/components/class-hptw-otp.php:586
 #, php-format
 msgid "Sign-in code refused for %s (duplicate phone number)."
 msgstr ""
 
 #. translators: %s: masked phone number.
-#: includes/components/class-hptw-otp.php:569
+#: includes/components/class-hptw-otp.php:601
 #, php-format
 msgid "Sign-in code not sent for %s (no account holds that number)."
 msgstr ""
 
-#: includes/components/class-hptw-otp.php:652
+#. translators: %s: masked phone number.
+#: includes/components/class-hptw-otp.php:685
 #, php-format
 msgid "Sign-in code refused for %s (still inside the resend cooldown)."
 msgstr ""
 
-#: includes/components/class-hptw-otp.php:661
+#. translators: %s: masked phone number.
+#: includes/components/class-hptw-otp.php:695
 #, php-format
 msgid "Sign-in code refused for %s (hourly request limit reached)."
 msgstr ""
 
 #. translators: %s: masked phone number.
-#: includes/components/class-hptw-otp.php:723
+#: includes/components/class-hptw-otp.php:757
 #, php-format
 msgid "Sign-in code for %s not sent (site-wide hourly limit reached)."
 msgstr ""
 
 #. translators: 1: site name, 2: six-digit code.
-#: includes/components/class-hptw-otp.php:785
+#: includes/components/class-hptw-otp.php:819
 #, php-format
 msgid "Your %1$s sign-in code is %2$s. It expires in 10 minutes."
 msgstr ""
 
 #. translators: %s: masked phone number.
-#: includes/components/class-hptw-otp.php:802
+#: includes/components/class-hptw-otp.php:836
 #, php-format
 msgid "Sign-in code sent to %s."
 msgstr ""
@@ -288,7 +270,7 @@ msgid "Ask for the phone number during registration"
 msgstr ""
 
 #: includes/configs/settings.php:35
-msgid "Add an optional phone number field to the registration form. Without it, the registration SMS cannot be delivered, because users only add their number in the account settings after signing up. Set the Country Code option too, so numbers typed in the national format still deliver."
+msgid "Add an optional phone number field to the registration form; without one, the registration SMS cannot be delivered. Set the Country Code option too, so numbers typed in the national format still deliver."
 msgstr ""
 
 #: includes/configs/settings.php:41
@@ -304,7 +286,7 @@ msgid "Administrator Phone"
 msgstr ""
 
 #: includes/configs/settings.php:51
-msgid "Enter the number that should receive the administrator alerts, such as newly submitted or reported listings. Events that HivePress emails to the site administrator are texted to this number. If it is blank, the alerts go to the phone number of the user account matching the administrator email address, if there is one."
+msgid "Enter the number that receives the administrator alerts, such as newly submitted or reported listings. If it is blank, the alerts go to the phone number of the user account matching the administrator email address, if there is one."
 msgstr ""
 
 #: includes/configs/settings.php:59
@@ -324,7 +306,7 @@ msgid "Sign-In Codes"
 msgstr ""
 
 #: includes/configs/settings.php:70
-msgid "Let users sign in without a password by texting a six-digit code to the phone number saved on their account. Codes expire after 10 minutes and requests are rate limited to protect you from SMS pumping fraud, but every code still costs one message at your Twilio rate. If your site uses reCAPTCHA or Turnstile, add the SMS code request form to its protected forms so automated abuse is blocked before a text is sent."
+msgid "Let users sign in without a password by texting a six-digit code to the phone number saved on their account. Codes expire after 10 minutes and requests are rate limited to protect you from SMS pumping fraud, but every code still costs one message at your Twilio rate. If your site uses reCAPTCHA or Turnstile, add the SMS code request form to its protected forms."
 msgstr ""
 
 #: includes/configs/settings.php:75
@@ -336,7 +318,7 @@ msgid "Let users sign in with a code sent by SMS"
 msgstr ""
 
 #: includes/configs/settings.php:77
-msgid "Adds a \"Sign in with an SMS code\" link to the sign-in form. The code is sent through the Twilio API to the phone number saved on the matching account, so only users who already added a number can use it. If two accounts share one number, neither can sign in with a code until the duplicate is removed."
+msgid "Adds a \"Sign in with an SMS code\" link to the sign-in form. The code goes to the phone number saved on the matching account, so only users who already added a number can use it. If two accounts share one number, neither can sign in with a code until the duplicate is removed."
 msgstr ""
 
 #: includes/configs/settings.php:85
@@ -345,7 +327,7 @@ msgstr ""
 
 #: includes/configs/settings.php:87
 #, php-format
-msgid "Set the SMS text sent for each event below. An SMS mirrors the corresponding email notification and supports the same tokens, including model tokens such as %user.first_name%. The full token list for each event is available on the email edit screen. Leave a message blank to disable its SMS."
+msgid "Set the SMS text sent for each event below; leave a message blank to disable its SMS. An SMS mirrors the corresponding email notification and supports the same tokens, including model tokens such as %user.first_name%. The full token list for each event is on the email edit screen."
 msgstr ""
 
 #: includes/configs/settings.php:94
@@ -369,7 +351,7 @@ msgid "Tick this before deleting the plugin to remove its stored data: the Twili
 msgstr ""
 
 #: includes/configs/settings.php:115
-msgid "Enter your Twilio API credentials to enable SMS delivery. Create an API key on the API keys and tokens page of the Twilio console and enter it with your account SID. Live sending needs an upgraded (paid) Twilio account with an approved Trust Hub compliance profile; trial accounts can only text verified numbers and often reject free-text messages entirely. When a messaging service SID is set it takes precedence over the phone number."
+msgid "Enter your Twilio API credentials to enable SMS delivery: create an API key on the API keys and tokens page of the Twilio console and enter it with your account SID. Live sending needs an upgraded (paid) Twilio account with an approved Trust Hub compliance profile; trial accounts can only text verified numbers and often reject free-text messages entirely. When a messaging service SID is set it takes precedence over the phone number."
 msgstr ""
 
 #: includes/configs/settings.php:120
@@ -482,48 +464,60 @@ msgstr ""
 msgid "Donate"
 msgstr ""
 
-#: twilio-for-hivepress.php:259
+#: twilio-for-hivepress.php:258
 msgid "Show"
 msgstr ""
 
-#: twilio-for-hivepress.php:260
+#: twilio-for-hivepress.php:259
 msgid "Hide"
 msgstr ""
 
-#: twilio-for-hivepress.php:578
+#: twilio-for-hivepress.php:414
+msgid "Jump to a section:"
+msgstr ""
+
+#: twilio-for-hivepress.php:415
+msgid "Save Changes"
+msgstr ""
+
+#: twilio-for-hivepress.php:416
+msgid "Back to top"
+msgstr ""
+
+#: twilio-for-hivepress.php:1091
 msgid "See the GitHub releases page for the changelog."
 msgstr ""
 
-#: twilio-for-hivepress.php:601
+#: twilio-for-hivepress.php:1114
 msgid "Settings"
 msgstr ""
 
-#: twilio-for-hivepress.php:617
+#: twilio-for-hivepress.php:1130
 msgid "Check for updates"
 msgstr ""
 
 #. translators: %s: new version number.
-#: twilio-for-hivepress.php:683
+#: twilio-for-hivepress.php:1203
 #, php-format
 msgid "A new version of Twilio for HivePress (%s) is available."
 msgstr ""
 
-#: twilio-for-hivepress.php:686
+#: twilio-for-hivepress.php:1206
 msgid "Twilio for HivePress is up to date."
 msgstr ""
 
-#: twilio-for-hivepress.php:689
+#: twilio-for-hivepress.php:1209
 msgid "No releases have been published on GitHub yet, so there is nothing to update to."
 msgstr ""
 
-#: twilio-for-hivepress.php:692
+#: twilio-for-hivepress.php:1212
+msgid "GitHub limits how many update checks one server may make each hour, and this server has reached that limit. Nothing is wrong with the plugin or your site, and checking will work again within the hour."
+msgstr ""
+
+#: twilio-for-hivepress.php:1215
 msgid "Could not reach GitHub to check for updates. Please try again later."
 msgstr ""
 
-#: twilio-for-hivepress.php:737
+#: twilio-for-hivepress.php:1260
 msgid "Could not rename the update directory."
-msgstr ""
-
-#: twilio-for-hivepress.php:1028
-msgid "GitHub limits how many update checks one server may make each hour, and this server has reached that limit. Nothing is wrong with the plugin or your site, and checking will work again within the hour."
 msgstr ""

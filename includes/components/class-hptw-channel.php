@@ -56,7 +56,6 @@ final class Hptw_Channel extends Component {
 	 * @param array $args Component arguments.
 	 */
 	public function __construct( $args = [] ) {
-
 		/*
 		 * Detection is lazy on purpose. These filters register during
 		 * component construction (plugins_loaded -10), while the notifications
@@ -67,6 +66,7 @@ final class Hptw_Channel extends Component {
 		 * re-checks availability at call time via is_active() instead.
 		 */
 		add_filter( 'hivepress/v1/notification_channels', [ $this, 'add_channel' ] );
+
 		/*
 		 * Priority 1000, not the default 10. Notifications for HivePress registers its
 		 * extension-contributed types at 20 and its insight types at 30, inside this same
@@ -424,7 +424,6 @@ final class Hptw_Channel extends Component {
 	 * @return array
 	 */
 	public function add_settings( $settings ) {
-
 		/*
 		 * Without the notifications plugin there is nothing to link to, so no
 		 * section is added at all rather than a section about an absent
@@ -439,7 +438,7 @@ final class Hptw_Channel extends Component {
 		}
 
 		if ( $this->notifications() && method_exists( $this->notifications(), 'get_optin_channels' ) ) {
-			$description = esc_html__( 'This links SMS with the Notifications for HivePress extension. With the box below ticked, SMS joins On-site, Email and Push as a choice on each member\'s Notification Settings page. For events enabled under the notification settings, a text only goes to a member who has ticked SMS there. Events you have left disabled there keep today\'s behaviour and go to anyone with a saved message. Everyone starts unticked, so ticking this box stops texts to members until each person opts in; texts to the administrator phone are not affected. The events above still decide which emails can be texted at all and what each text says, and clearing an event\'s message still switches that event off for everyone.', 'twilio-for-hivepress' );
+			$description = esc_html__( 'This links SMS with the Notifications for HivePress extension: with the box below ticked, SMS joins On-site, Email and Push as a choice on each member\'s Notification Settings page. For events enabled under the notification settings, a text then only goes to a member who has ticked SMS there; events left disabled there keep today\'s behaviour and go to anyone with a saved message. Everyone starts unticked, so ticking this box stops texts to members until each person opts in; texts to the administrator phone are not affected.', 'twilio-for-hivepress' );
 		} else {
 			$description = esc_html__( 'This links SMS with the Notifications for HivePress extension. Your copy of that extension is too old for this feature, so the box below has no effect until you update it to version 1.1.0 or later.', 'twilio-for-hivepress' );
 		}
@@ -469,7 +468,7 @@ final class Hptw_Channel extends Component {
 								'twilio_notification_channel' => [
 									'label'       => esc_html__( 'Member Opt-in', 'twilio-for-hivepress' ),
 									'caption'     => esc_html__( 'Let members choose SMS on their Notification Settings page', 'twilio-for-hivepress' ),
-									'description' => esc_html__( 'For events enabled under the notification settings, texts only go to members who have ticked SMS themselves, and their quiet hours are respected, so a text that falls inside them is simply not sent. A few notifications have no email behind them, such as a completed booking or a new favourite; those are texted using the wording from the notification settings and only alongside the on-site notification. Announcements are never texted. Events you have left disabled under the notification settings keep today\'s behaviour and go to anyone with a saved message.', 'twilio-for-hivepress' ),
+									'description' => esc_html__( 'Texts only go to members who have ticked SMS themselves, and their quiet hours are respected, so a text that falls inside them is simply not sent. Notifications with no email behind them, such as a completed booking or a new favourite, are texted with the wording from the notification settings; announcements are never texted. Events left disabled under the notification settings keep today\'s behaviour and go to anyone with a saved message.', 'twilio-for-hivepress' ),
 									'type'        => 'checkbox',
 									'_order'      => 10,
 								],

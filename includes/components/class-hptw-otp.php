@@ -589,7 +589,6 @@ final class Hptw_Otp extends Component {
 		}
 
 		if ( ! $survivors ) {
-
 			/*
 			 * Logged for the same reason the two rate-limit refusals are: with duplicate and
 			 * cooldown pressure both visible and this one silent, an admin could see every kind
@@ -682,6 +681,7 @@ final class Hptw_Otp extends Component {
 		 * a member tapping "Send a new code" too quickly cannot be mistaken for that.
 		 */
 		if ( $cooldown && get_transient( $cooldown_key ) ) {
+			/* translators: %s: masked phone number. */
 			$this->log( sprintf( __( 'Sign-in code refused for %s (still inside the resend cooldown).', 'twilio-for-hivepress' ), $this->mask_phone( $e164 ) ) );
 
 			return true;
@@ -691,6 +691,7 @@ final class Hptw_Otp extends Component {
 		$ip_count    = (int) get_transient( $ip_key );
 
 		if ( $phone_count >= $phone_cap || $ip_count >= $ip_cap ) {
+			/* translators: %s: masked phone number. */
 			$this->log( sprintf( __( 'Sign-in code refused for %s (hourly request limit reached).', 'twilio-for-hivepress' ), $this->mask_phone( $e164 ) ) );
 
 			return true;

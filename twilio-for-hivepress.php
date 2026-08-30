@@ -3,7 +3,7 @@
  * Plugin Name: Twilio for HivePress
  * Plugin URI: https://github.com/irapidchris-del/twilio-sms-for-hivepress
  * Description: Send SMS notifications for HivePress events via Twilio.
- * Version: 1.7.3
+ * Version: 1.8.3
  * Author: ChrisB @ HivePress Community
  * Author URI: https://community.hivepress.io/u/chrisb/summary
  * Text Domain: twilio-for-hivepress
@@ -23,7 +23,7 @@ namespace TwilioForHivePress;
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
-const VERSION = '1.7.3';
+const VERSION = '1.8.3';
 
 /**
  * Registers the extension with HivePress.
@@ -166,18 +166,52 @@ function add_row_meta( $meta, $plugin_file ) {
 add_filter( 'plugin_row_meta', __NAMESPACE__ . '\\add_row_meta', 10, 2 );
 
 /**
- * Checks whether the current screen is the Integrations settings tab.
+ * Checks whether the masked API Key Secret field is on the screen being rendered.
+ *
+ * READ THIS BEFORE "FIXING" IT BACK TO $_GET['tab']. Until 1.8.3 this asked for
+ * 'integrations' === $tab, which is the same mistake corrected in
+ * enqueue_admin_assets() below: HivePress falls back to the FIRST tab whenever
+ * "tab" is absent from the address (class-admin.php:607-622), and the bare
+ * admin.php?page=hp_settings link in the HivePress menu is exactly that case.
+ * The test then compared '' against 'integrations' and returned false while the
+ * Integrations tab was on screen, so on any site where it sorts first the API
+ * Key Secret rendered with no show/hide button and stretched across the whole
+ * page. Nothing was logged, because nothing had gone wrong as far as PHP knew.
+ *
+ * The question this gate asks is not "which tab is this?" but "is the field I
+ * decorate on screen?", so it asks for that one registered field rather than
+ * for the hp_twilio_ prefix. is_settings_tab() below would answer true on the
+ * SMS tab as well, which does not carry the secret at all, and a gate that
+ * fires where its field is absent is how the next person concludes the gate is
+ * decorative and deletes it.
+ *
+ * Admin::register_settings() builds one tab's fields and calls
+ * add_settings_field() with the prefixed option name as the id
+ * (class-admin.php:287-325), and it runs at all only on
+ * admin.php?page=hp_settings or options.php (:278), so a true answer also means
+ * this is the settings screen. Timing is the only thing to get right: HivePress
+ * registers on admin_init priority 10, and the two callers run on admin_head
+ * and admin_footer, both later. Full rule: resources/hivepress-settings.md,
+ * "The tab IS knowable server-side: ask the registered fields".
  *
  * @return bool
  */
 function is_credentials_screen() {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return false;
+	}
 
-	// phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only screen check that changes nothing; the capability test below is the gate.
-	$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
-	$tab  = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : '';
-	// phpcs:enable WordPress.Security.NonceVerification.Recommended
+	if ( ! isset( $GLOBALS['wp_settings_fields']['hp_settings'] ) || ! is_array( $GLOBALS['wp_settings_fields']['hp_settings'] ) ) {
+		return false;
+	}
 
-	return 'hp_settings' === $page && 'integrations' === $tab && current_user_can( 'manage_options' );
+	foreach ( $GLOBALS['wp_settings_fields']['hp_settings'] as $hptw_section ) {
+		if ( isset( $hptw_section['hp_twilio_api_key_secret'] ) ) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 /**
@@ -221,8 +255,7 @@ function print_secret_styles() {
 			padding-right: 2.2em;
 		}
 
-		/* Match core, which widens every form-table input to the full row
-		   below the wp-admin mobile breakpoint. */
+		/* Match core, which widens every form-table input to the full row below the wp-admin mobile breakpoint. */
 		@media screen and (max-width: 782px) {
 
 			.hp-form--table input[name="hp_twilio_api_key_secret"],
@@ -318,6 +351,111 @@ function print_secret_toggles() {
 }
 
 add_action( 'admin_footer', __NAMESPACE__ . '\\print_secret_toggles' );
+
+/**
+ * Whether the settings tab currently being rendered carries this plugin's own fields.
+ *
+ * Answered from the fields HivePress has actually registered for this request, never from
+ * $_GET['tab']. The address cannot be trusted: get_settings_tab() falls back to the FIRST tab
+ * whenever "tab" is absent (reference/hivepress/includes/components/class-admin.php:607-622),
+ * and the bare admin.php?page=hp_settings link in the HivePress menu is exactly that case, so
+ * reading the address would miss this plugin's own tab on any site where it sorts first.
+ *
+ * register_settings() builds the sections and fields for one tab only and calls
+ * add_settings_field() with the prefixed option name (class-admin.php:287-325), so
+ * $wp_settings_fields['hp_settings'] holds hp_twilio_* keys on this plugin's tabs and on no
+ * other. It is the server-side twin of the [name^="hp_twilio_"] gate the script uses. This
+ * plugin registers on two tabs - SMS and Integrations - and the test answers true on both,
+ * which is what it should do: the chrome belongs on any tab this plugin has fields on.
+ *
+ * Timing is the only thing to get right. HivePress registers on admin_init priority 10, and
+ * this runs from admin_enqueue_scripts, which wp-admin fires later, from admin-header.php.
+ * Called any earlier it would return false and this tab would silently lose its assets, so
+ * re-test the tab if the hook is ever moved.
+ *
+ * @return bool
+ */
+function is_settings_tab() {
+	if ( ! isset( $GLOBALS['wp_settings_fields']['hp_settings'] ) || ! is_array( $GLOBALS['wp_settings_fields']['hp_settings'] ) ) {
+		return false;
+	}
+
+	foreach ( $GLOBALS['wp_settings_fields']['hp_settings'] as $hp_section ) {
+		foreach ( array_keys( (array) $hp_section ) as $hp_field ) {
+			if ( 0 === strpos( (string) $hp_field, 'hp_twilio_' ) ) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Enqueues the shared settings-screen chrome and this plugin's own settings styles.
+ *
+ * Loaded only on a tab that carries this plugin's own fields.
+ *
+ * Until 1.8.1 this enqueued on every HivePress settings tab, with a comment saying the tab was
+ * "not knowable here". Half of that was right and half was wrong. Reading $_GET['tab'] really
+ * would miss the bare admin.php?page=hp_settings case, because core falls back to the FIRST
+ * tab when "tab" is absent - but the tab IS knowable, from the fields HivePress registered for
+ * this request. See is_settings_tab() above, and
+ * resources/hivepress-settings.md, "The tab IS knowable server-side: ask the registered
+ * fields" (2026-08-30). It matters because a stylesheet cannot no-op the way a script can, and
+ * twelve siblings are gaining settings-screen chrome of their own, so "everyone enqueues
+ * everywhere" ends with a dozen plugins' admin assets on every tab.
+ *
+ * The script keeps its own hp_twilio_ gate: this decides whether the file loads, that decides
+ * whether it acts, and neither is a substitute for the other.
+ *
+ * @return void
+ */
+function enqueue_admin_assets() {
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only screen check.
+	if ( ! isset( $_GET['page'] ) || 'hp_settings' !== sanitize_key( wp_unslash( $_GET['page'] ) ) ) {
+		return;
+	}
+
+	if ( ! is_settings_tab() ) {
+		return;
+	}
+
+	// The file time rides along in the version so caches refresh whenever the file changes.
+	wp_enqueue_style(
+		'hptw-admin',
+		plugins_url( 'assets/css/hptw-admin.css', __FILE__ ),
+		[],
+		VERSION . '.' . (int) filemtime( __DIR__ . '/assets/css/hptw-admin.css' )
+	);
+
+	wp_enqueue_script(
+		'hptw-admin',
+		plugins_url( 'assets/js/hptw-admin.js', __FILE__ ),
+		[ 'jquery' ],
+		VERSION . '.' . (int) filemtime( __DIR__ . '/assets/js/hptw-admin.js' ),
+		true
+	);
+
+	wp_add_inline_script(
+		'hptw-admin',
+		'window.hptwAdmin=' . wp_json_encode(
+			[
+				'labels' => [
+					// The colon is part of the wording: it reads as a lead-in to
+					// the links that follow it, not as a heading over them. The
+					// same string in every sibling plugin, deliberately.
+					'jumpTo'    => esc_html__( 'Jump to a section:', 'twilio-for-hivepress' ),
+					'save'      => esc_html__( 'Save Changes', 'twilio-for-hivepress' ),
+					'backToTop' => esc_html__( 'Back to top', 'twilio-for-hivepress' ),
+				],
+			]
+		) . ';',
+		'before'
+	);
+}
+
+add_action( 'admin_enqueue_scripts', __NAMESPACE__ . '\\enqueue_admin_assets' );
 
 /*
  * -------------------------------------------------------------------------

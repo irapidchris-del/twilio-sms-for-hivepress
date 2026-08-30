@@ -32,7 +32,7 @@ return [
 					'twilio_register_phone'  => [
 						'label'       => esc_html__( 'Registration Field', 'twilio-for-hivepress' ),
 						'caption'     => esc_html__( 'Ask for the phone number during registration', 'twilio-for-hivepress' ),
-						'description' => esc_html__( 'Add an optional phone number field to the registration form. Without it, the registration SMS cannot be delivered, because users only add their number in the account settings after signing up. Set the Country Code option too, so numbers typed in the national format still deliver.', 'twilio-for-hivepress' ),
+						'description' => esc_html__( 'Add an optional phone number field to the registration form; without one, the registration SMS cannot be delivered. Set the Country Code option too, so numbers typed in the national format still deliver.', 'twilio-for-hivepress' ),
 						'type'        => 'checkbox',
 						'_order'      => 15,
 					],
@@ -48,7 +48,7 @@ return [
 
 					'twilio_admin_phone'     => [
 						'label'       => esc_html__( 'Administrator Phone', 'twilio-for-hivepress' ),
-						'description' => esc_html__( 'Enter the number that should receive the administrator alerts, such as newly submitted or reported listings. Events that HivePress emails to the site administrator are texted to this number. If it is blank, the alerts go to the phone number of the user account matching the administrator email address, if there is one.', 'twilio-for-hivepress' ),
+						'description' => esc_html__( 'Enter the number that receives the administrator alerts, such as newly submitted or reported listings. If it is blank, the alerts go to the phone number of the user account matching the administrator email address, if there is one.', 'twilio-for-hivepress' ),
 						'type'        => 'text',
 						'max_length'  => 24,
 						'placeholder' => '+447700900123',
@@ -67,14 +67,14 @@ return [
 
 			'login'     => [
 				'title'       => esc_html__( 'Sign-In Codes', 'twilio-for-hivepress' ),
-				'description' => esc_html__( 'Let users sign in without a password by texting a six-digit code to the phone number saved on their account. Codes expire after 10 minutes and requests are rate limited to protect you from SMS pumping fraud, but every code still costs one message at your Twilio rate. If your site uses reCAPTCHA or Turnstile, add the SMS code request form to its protected forms so automated abuse is blocked before a text is sent.', 'twilio-for-hivepress' ),
+				'description' => esc_html__( 'Let users sign in without a password by texting a six-digit code to the phone number saved on their account. Codes expire after 10 minutes and requests are rate limited to protect you from SMS pumping fraud, but every code still costs one message at your Twilio rate. If your site uses reCAPTCHA or Turnstile, add the SMS code request form to its protected forms.', 'twilio-for-hivepress' ),
 				'_order'      => 15,
 
 				'fields'      => [
 					'twilio_otp_login' => [
 						'label'       => esc_html__( 'SMS Sign-In', 'twilio-for-hivepress' ),
 						'caption'     => esc_html__( 'Let users sign in with a code sent by SMS', 'twilio-for-hivepress' ),
-						'description' => esc_html__( 'Adds a "Sign in with an SMS code" link to the sign-in form. The code is sent through the Twilio API to the phone number saved on the matching account, so only users who already added a number can use it. If two accounts share one number, neither can sign in with a code until the duplicate is removed.', 'twilio-for-hivepress' ),
+						'description' => esc_html__( 'Adds a "Sign in with an SMS code" link to the sign-in form. The code goes to the phone number saved on the matching account, so only users who already added a number can use it. If two accounts share one number, neither can sign in with a code until the duplicate is removed.', 'twilio-for-hivepress' ),
 						'type'        => 'checkbox',
 						'_order'      => 10,
 					],
@@ -84,7 +84,7 @@ return [
 			'events'    => [
 				'title'       => esc_html__( 'Events', 'twilio-for-hivepress' ),
 				// phpcs:ignore WordPress.WP.I18n.MissingTranslatorsComment -- %user.first_name% is a literal HivePress token example, not a printf directive.
-				'description' => esc_html__( 'Set the SMS text sent for each event below. An SMS mirrors the corresponding email notification and supports the same tokens, including model tokens such as %user.first_name%. The full token list for each event is available on the email edit screen. Leave a message blank to disable its SMS.', 'twilio-for-hivepress' ),
+				'description' => esc_html__( 'Set the SMS text sent for each event below; leave a message blank to disable its SMS. An SMS mirrors the corresponding email notification and supports the same tokens, including model tokens such as %user.first_name%. The full token list for each event is on the email edit screen.', 'twilio-for-hivepress' ),
 				'_order'      => 20,
 
 				'fields'      => [],
@@ -112,7 +112,7 @@ return [
 		'sections' => [
 			'twilio' => [
 				'title'       => 'Twilio',
-				'description' => esc_html__( 'Enter your Twilio API credentials to enable SMS delivery. Create an API key on the API keys and tokens page of the Twilio console and enter it with your account SID. Live sending needs an upgraded (paid) Twilio account with an approved Trust Hub compliance profile; trial accounts can only text verified numbers and often reject free-text messages entirely. When a messaging service SID is set it takes precedence over the phone number.', 'twilio-for-hivepress' ),
+				'description' => esc_html__( 'Enter your Twilio API credentials to enable SMS delivery: create an API key on the API keys and tokens page of the Twilio console and enter it with your account SID. Live sending needs an upgraded (paid) Twilio account with an approved Trust Hub compliance profile; trial accounts can only text verified numbers and often reject free-text messages entirely. When a messaging service SID is set it takes precedence over the phone number.', 'twilio-for-hivepress' ),
 				'_order'      => 15,
 
 				'fields'      => [

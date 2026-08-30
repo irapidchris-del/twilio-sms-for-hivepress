@@ -2,9 +2,9 @@
 Contributors: chrisb
 Tags: hivepress, twilio, sms, notifications
 Requires at least: 5.8
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.7.3
+Stable tag: 1.8.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -112,6 +112,39 @@ Ideally the international E.164 format (e.g. +447700900123). If you set the defa
 The plugin checks its GitHub repository for new releases and shows available updates on your Plugins screen, so you can update with one click just like a WordPress.org plugin. Updates are downloaded from the official release file, so your plugin folder never changes. The first version you install must be added manually; every version after that can be updated in place.
 
 == Changelog ==
+
+= 1.8.3 =
+* Fixed: the API Key Secret on the Integrations tab lost its show/hide button and stretched across
+  the whole screen when you opened Settings from the HivePress menu rather than clicking through to
+  the Integrations tab. The secret stayed hidden either way, but there was no way to check what you
+  had pasted. The button and the normal field width now appear wherever the secret is shown.
+
+= 1.8.2 =
+* Housekeeping only: nothing on your settings screen has moved, changed or
+  behaves differently. The settings-screen code this extension shares with the
+  others in the family was reformatted to match them line for line, so that a
+  fix made to one of them can be checked against all of them in one go.
+
+= 1.8.1 =
+* The settings screens now carry the same controls as the other extensions in this family: the
+  quick links stay in view as you scroll, a Save Changes tab sits on the right edge of the screen
+  wherever you are on the page (a bar across the bottom on a phone), and a back-to-top button
+  appears once you have scrolled down. Whichever of these extensions you have installed, you see
+  one set of controls, in the same places.
+* The quick links now say "Jump to a section:" so it is clear what the row of links is for, and
+  they appear on the Integrations tab as well as the SMS tab.
+* The settings styles and scripts are no longer loaded on the other HivePress settings tabs. They
+  did nothing there, but they were still being downloaded on every tab.
+
+= 1.8.0 =
+* The SMS settings tab now starts with quick links that jump to each section, with a divider
+  between sections, so the delivery options, sign-in codes, event messages and removal setting are
+  easy to find on what had become one long page.
+* Settings descriptions are shorter and easier to read: long explanations have been trimmed to the
+  essentials, descriptions wrap at a readable width on wide screens, and the small hover tooltips
+  next to the field labels are wider, so they no longer chop each sentence into ribbons.
+* Nothing about sending, sign-in codes or your stored settings has changed; this release only
+  tidies the settings screens.
 
 = 1.7.3 =
 * Fixed - sign in by SMS can no longer send a code that signs somebody into the wrong account.
