@@ -107,7 +107,7 @@ delete_option( 'hp_twilio_otp_backfill' );
 if ( $hptw_delete_all ) {
 	/*
 	 * Delete the options: the Twilio credentials, the delivery settings, the per-event SMS
-	 * messages, the Member Opt-in toggle and the SMS Sign-In toggle. The names are matched on the
+	 * messages, the Member Opt-in toggle, the SMS Sign-In toggle and the Paid Access wording. The names are matched on the
 	 * plugin's prefix because
 	 * most are dynamic - one text option per notification event, including events registered by
 	 * other extensions.
@@ -131,6 +131,10 @@ if ( $hptw_delete_all ) {
 	foreach ( (array) $hptw_option_names as $hptw_option_name ) {
 		delete_option( $hptw_option_name );
 	}
+
+	// The "Allow SMS notifications" tick on each membership plan (1.9.0). The plans belong to
+	// HivePress Memberships and stay; only this plugin's flag on them goes.
+	delete_metadata( 'post', 0, 'hp_twilio_sms_access', '', true );
 
 	// Last, and only once everything above has succeeded.
 	delete_option( 'hp_twilio_delete_data' );

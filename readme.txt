@@ -4,7 +4,7 @@ Tags: hivepress, twilio, sms, notifications
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.8.3
+Stable tag: 1.9.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -28,6 +28,7 @@ Features:
 * Numbers are normalised to the E.164 format, with an optional default country code for numbers saved in the national format.
 * Optional error logging for troubleshooting deliveries.
 * Optional integration with the Notifications for HivePress extension (version 1.1.0 or later): SMS becomes a choice on each member's own Notification Settings page, strictly opt-in, with quiet hours respected.
+* Sell SMS access through HivePress Memberships: tick "Allow SMS notifications" on a membership plan and texts go only to members of that plan, so the cost of every message can be part of a paid plan rather than something you carry for everyone.
 * Automatic updates from GitHub: once installed, new releases appear on your Plugins screen for one-click updating, just like a WordPress.org plugin.
 
 **Twilio account requirements.** Live sending needs a properly set-up Twilio account; a free trial cannot deliver this plugin's messages. Expect all four of these steps in the Twilio console before the first SMS arrives:
@@ -40,6 +41,8 @@ Features:
 The plugin shows the last delivery error on its settings screen, so each of these states is visible rather than silent.
 
 **SMS as a notification channel.** With the Notifications for HivePress extension (version 1.1.0 or later) active, a Member Opt-in toggle appears via HivePress > Settings > SMS > Member Preferences. The toggle ships off. With it on, SMS joins On-site, Email and Push on each member's Notification Settings page: for events enabled under the notification settings, a text only goes to a member who has ticked SMS there, while events you have left disabled there keep today's behaviour and go to anyone with a saved message. No role default ever grants SMS; every member starts unticked and opts in themselves. Quiet hours are respected on member texts, and a text that falls inside them is dropped, not queued for later. Announcements are never texted. Texts to the administrator phone are unaffected by the toggle, member preferences and quiet hours. Notifications with no email behind them, such as a completed booking or a new favourite, are texted with the wording from the notification settings and only alongside the on-site notification.
+
+**Selling SMS access.** With the HivePress Memberships extension active, each membership plan's Settings box gains an "Allow SMS notifications" tick box. Leave it unticked on every plan and nothing changes: every member with a saved phone number can receive texts. Tick it on one plan or more and member-addressed texts go only to users holding an active membership on one of those plans; everyone else loses the SMS choice on their Notification Settings page and sees a short sentence, which you can reword via HivePress > Settings > SMS > Paid Access, with a link to your plans. Texts to the administrator phone and sign-in codes are never limited, and the limit stays in force if Memberships is later switched off, so nobody is texted for free by accident.
 
 **For developers.** The `hptw_sms_send` filter now receives two extra arguments, the recipient's user object (or null) and the recipient email address; callbacks registered with up to four accepted arguments keep working unchanged. Notifications without an email are texted through the new `hptw_channel_sms_text` filter, which receives the text and the notification object and can veto the send by returning an empty value. The public `send_message()` method is for trusted callers only: destinations must be resolved server-side, never taken from request input, and it applies no rate limiting of its own, so it must never be exposed to visitors.
 
@@ -66,6 +69,10 @@ New Twilio trial accounts are heavily restricted: they can only text phone numbe
 = Why do new users not receive the registration SMS? =
 
 The standard HivePress registration form does not ask for a phone number, so at the moment the registration SMS is sent, no number is known yet. Enable "Ask for the phone number during registration" via HivePress > Settings > SMS to add an optional phone field to the registration form; users who fill it in receive the registration SMS and any later notifications straight away. Alternatively, HivePress itself shows a phone attribute at registration when the attribute is marked as required; in that case it is a mandatory field, and this plugin leaves it in place rather than adding a second one.
+
+= How do I charge for SMS notifications? =
+
+Install the HivePress Memberships extension, edit a membership plan and tick "Allow SMS notifications" in its Settings box. From then on texts go only to members of the plans you ticked; the Paid Access section under HivePress > Settings > SMS shows which plans those are and lets you reword the sentence other members see. Untick the box on every plan to open SMS to everyone again. The administrator phone and sign-in codes are not affected either way. Sites that grant access another way can hook the `hptw_sms_access` filter.
 
 = Why is a notification not sent as an SMS? =
 
@@ -112,6 +119,10 @@ Ideally the international E.164 format (e.g. +447700900123). If you set the defa
 The plugin checks its GitHub repository for new releases and shows available updates on your Plugins screen, so you can update with one click just like a WordPress.org plugin. Updates are downloaded from the official release file, so your plugin folder never changes. The first version you install must be added manually; every version after that can be updated in place.
 
 == Changelog ==
+
+= 1.9.0 =
+* New: sell SMS access through HivePress Memberships. Tick "Allow SMS notifications" on a membership plan and notification texts go only to members of that plan; other members lose the SMS choice on their Notification Settings page and see a sentence you can reword under SMS > Paid Access, with a link to your plans. Leave the box unticked on every plan and nothing changes. Texts to the administrator phone and sign-in codes are never limited, and the limit stays in force if Memberships is switched off.
+* New: the `hptw_sms_access` filter, for sites that grant SMS access from their own membership or purchase system.
 
 = 1.8.3 =
 * Fixed: the API Key Secret on the Integrations tab lost its show/hide button and stretched across
