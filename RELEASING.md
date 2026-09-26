@@ -2,7 +2,7 @@
 
 The plugin updates itself from **GitHub Releases** using WordPress's native
 `update_plugins_github.com` mechanism (WP 5.8+), keyed off the `Update URI`
-header in `twilio-for-hivepress.php`. No third-party update library is bundled —
+header in `twilio-for-hivepress.php`. No third-party update library is bundled:
 the updater lives in the main plugin file.
 
 Site owners who have the plugin installed are notified on their **Plugins**
@@ -25,9 +25,9 @@ contain a single top-level `twilio-for-hivepress/` folder.
 `.github/workflows/release.yml` (permissions: `contents: write`) runs on two
 triggers:
 
-- **`release: published`** — when you publish a GitHub Release in the UI, it
+- **`release: published`**: when you publish a GitHub Release in the UI, it
   builds the zip and uploads it to that release as `twilio-for-hivepress.zip`.
-- **`workflow_dispatch`** — a manual run with inputs `tag` (required) and
+- **`workflow_dispatch`**: a manual run with inputs `tag` (required) and
   `notes` (optional). If the release doesn't exist it is created at the current
   commit (`--generate-notes` when no notes are given); if it already exists the
   tag is force-moved to the current commit, the notes are updated when provided,
@@ -38,7 +38,7 @@ Either way the build step runs `build.sh`, which `git archive`s the repo into
 (`.github`, `build.sh`, `RELEASING.md`, `phpcs.xml`, `tests`) are kept out of the
 zip via `.gitattributes` `export-ignore`.
 
-## Releasing from a Claude Code session
+## Releasing from an automated session
 
 `gh` and the raw releases REST API are not available inside a session, so:
 
@@ -46,7 +46,7 @@ zip via `.gitattributes` `export-ignore`.
    - `twilio-for-hivepress.php` → `Version:` header
    - `readme.txt` → `Stable tag:` and a new `== Changelog ==` entry
    - `languages/twilio-for-hivepress.pot` → `Project-Id-Version` (optional)
-2. **Commit and merge to the default branch** (`main`) — `workflow_dispatch`
+2. **Commit and merge to the default branch** (`main`); `workflow_dispatch`
    only runs from workflows on the default branch.
 3. **Trigger the workflow** with the GitHub MCP tool `actions_run_trigger`:
    - method: `run_workflow`
@@ -71,7 +71,7 @@ Because the asset always has the same name, GitHub exposes a permanent
 https://github.com/irapidchris-del/twilio-sms-for-hivepress/releases/latest/download/twilio-for-hivepress.zip
 ```
 
-Post that link once on the HivePress community forum — it never needs updating.
+Post that link once on the HivePress community forum; it never needs updating.
 
 ## Notes
 
