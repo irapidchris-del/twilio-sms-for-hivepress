@@ -98,9 +98,9 @@ final class Hptw_Twilio extends Component {
 		 * Attribute component registers its own user_register filter at 100
 		 * from an init callback, which is LATER than this constructor, so at
 		 * equal priority this filter would run first and a required phone
-		 * attribute would be downgraded to the optional field (found live on
-		 * staging, 2026-08-17). Running after core lets the isset guard defer
-		 * to any pre-existing definition, required flag intact.
+		 * attribute would be downgraded to the optional field. Running after
+		 * core lets the isset guard defer to any pre-existing definition,
+		 * required flag intact.
 		 */
 		add_filter( 'hivepress/v1/forms/user_register', [ $this, 'add_registration_field' ], 200, 2 );
 

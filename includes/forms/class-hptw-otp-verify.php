@@ -27,20 +27,14 @@ class Hptw_Otp_Verify extends Form {
 	 * inc/captcha.php::tfhp_set_captcha_meta), so omitting the key here keeps
 	 * this form off both checklists.
 	 *
-	 * Staging proved why (2026-08-18). A captcha widget on this step is minted
-	 * when the modal opens, then has to survive the member waiting for a text -
-	 * and, if they use "Send a new code", the whole 60-second cooldown. Turnstile
-	 * tokens expire in about five minutes, and the widget is never re-rendered
-	 * because it lives in a block that was hidden when the modal opened, so the
-	 * verify submission failed with "Please verify that you are human." and had
-	 * no recovery short of reloading. Sign-in was blocked outright.
-	 *
-	 * Nothing is lost by dropping it. The request form is the abuse surface and
-	 * the only one that spends money, and it stays protectable. This step is
-	 * already guarded by an atomic five-attempt lockout per code, a per-visitor
-	 * cap on verification attempts, single use, and a ten-minute expiry over a
-	 * six-digit space. Making somebody solve a captcha twice in one sign-in was
-	 * never worth that.
+	 * Why: a captcha widget on this step is minted when the modal opens and has
+	 * to survive the wait for the text (and any 60-second resend cooldown).
+	 * Turnstile tokens expire in about five minutes and the widget is never
+	 * re-rendered, because it sits in a block hidden when the modal opened, so
+	 * verification failed with "Please verify that you are human." and sign-in
+	 * was blocked. Nothing is lost: the request form is the abuse surface and
+	 * stays protectable, and this step already has an atomic five-attempt lockout
+	 * per code, a per-visitor cap, single use and a ten-minute expiry.
 	 *
 	 * @param array $meta Class meta values.
 	 */

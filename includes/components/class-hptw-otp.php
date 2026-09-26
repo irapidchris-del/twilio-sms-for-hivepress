@@ -22,10 +22,9 @@ defined( 'ABSPATH' ) || exit;
  * keys, hashing and limits never leave one file.
  *
  * Storage is split on purpose: login codes live in user meta because a
- * persistent object cache (Memcached on the staging host) can evict a
- * transient at any moment, and a nondeterministically vanishing login code is
- * unacceptable, while rate counters ARE transients because losing one merely
- * fails open on a limit.
+ * persistent object cache (such as Memcached) can evict a transient at any
+ * moment, and a vanishing login code is unacceptable, while rate counters
+ * ARE transients because losing one merely fails open on a limit.
  */
 final class Hptw_Otp extends Component {
 
@@ -282,12 +281,10 @@ final class Hptw_Otp extends Component {
 
 		/*
 		 * The file's own timestamp rides along in the version string. WordPress cache-busts with
-		 * "?ver=", so a version that only changes when the plugin does serves stale CSS and JS to
-		 * everyone who already has a copy - and an optimiser makes it worse: staging's FlyingPress
-		 * was still serving a 170-byte combined copy of a 1,734-byte stylesheet, with the ?ver=
-		 * stripped entirely, so two rounds of CSS edits were invisible there (2026-08-18). Editing
-		 * an asset without touching the plugin version is normal during a fix round, which is
-		 * exactly when this bites.
+		 * "?ver=", so a version that only changes with the plugin serves stale CSS and JS to everyone
+		 * who already has a copy, and page optimisers can keep serving an old combined copy. Editing
+		 * an asset without touching the plugin version is normal during a fix round, which is exactly
+		 * when this bites.
 		 */
 		$path = hivepress()->get_path( 'twilio_for_hivepress' );
 		$url  = hivepress()->get_url( 'twilio_for_hivepress' );
@@ -458,14 +455,11 @@ final class Hptw_Otp extends Component {
 	 * only ever fires for two accounts genuinely sharing one number - the
 	 * case the settings copy describes.
 	 *
-	 * A missed duplicate is not a cosmetic miss. The refusal exists because
-	 * nothing can tell which of two accounts sharing a number the requester
-	 * meant, so failing to see the second one does not merely skip a warning:
-	 * it texts a code to that handset and signs whoever holds it into the
-	 * other account. Staging found the case on 2026-08-18 - five accounts
-	 * held +4475...3514 and a sixth held the same number as 075...3514, which
-	 * no E.164 row could ever match - and it is why the sweep below runs
-	 * unconditionally and compares digits as well as normalised numbers.
+	 * A missed duplicate is not a cosmetic miss. Nothing can tell which of two accounts sharing
+	 * a number the requester meant, so missing the second one texts a code to that handset and
+	 * signs whoever holds it into the other account. Numbers stored in local form (075...) never
+	 * match an E.164 row (+4475...), which is why the sweep below runs unconditionally and
+	 * compares digits as well as normalised numbers.
 	 *
 	 * @param string $e164 Phone number in the E.164 format.
 	 * @param string $raw Sanitised submitted value, for the attribute lookup.
@@ -673,12 +667,10 @@ final class Hptw_Otp extends Component {
 		$ip_key       = 'hptw_otp_ip_' . md5( $this->get_ip() . '|' . $slot );
 
 		/*
-		 * Refusals are logged, masked, for the same reason duplicate refusals are: staging watched
-		 * a run where the only visible trace of rate-limit pressure was its absence, because a
-		 * cooldown refusal wrote nothing at all (2026-08-18). Collision pressure was legible and
-		 * abuse pressure was not, which is the wrong way round - hourly caps being hit is the
-		 * signal that someone is pumping the endpoint. The two branches are logged separately so
-		 * a member tapping "Send a new code" too quickly cannot be mistaken for that.
+		 * Refusals are logged, masked, for the same reason duplicate refusals are: otherwise
+		 * collision pressure is visible and abuse pressure is not, the wrong way round, since hourly
+		 * caps being hit is the signal that someone is pumping the endpoint. The two branches are
+		 * logged separately so a member tapping "Send a new code" too quickly is not mistaken for that.
 		 */
 		if ( $cooldown && get_transient( $cooldown_key ) ) {
 			/* translators: %s: masked phone number. */

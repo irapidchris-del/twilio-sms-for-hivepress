@@ -22,10 +22,9 @@
 		 * NOT that form's messages container: core renders both the uniform
 		 * "code sent" copy and the cooldown refusal into it, and "Send a new
 		 * code" below re-submits this same form, so those replies have to stay
-		 * readable from step two. Hiding the whole form is what let the resend
-		 * control look like it had done something when it had not - the member
-		 * saw the success line left over from the first request (staging,
-		 * 2026-08-18).
+		 * readable from step two. Hiding the whole form let the resend control
+		 * look like it had worked when it had not: the member saw the success
+		 * line left over from the first request.
 		 *
 		 * The fields container is left alone for the same reason: when an admin
 		 * lists this form under Protected Forms, core adds the captcha as a
